@@ -14,5 +14,4 @@ don't remember, but I have a dream, as they say.
 
 ## The next step
 
-- Allow the command `denseedia add --url [URL]` to specify an URL. Optimally in
-  this case, the title will be asked if missing in the command.
+Let's create issues for new ideas. It's more convenient.

@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, Optional as Opt
+from typing import Any, Dict, Optional as Opt
 
 import yaml
 from typing_extensions import TypedDict
@@ -12,6 +12,7 @@ class EdiumType(TypedDict):
     title: str
     kind: Opt[str]
     date: str
+    extras: Dict[str, Any]
 
 
 class StorageType(TypedDict):
@@ -41,15 +42,18 @@ def get_new_id() -> int:
         return 1
 
 
-def add_edium(title: str, kind: Opt[str]) -> None:
+def add_edium(title: str, kind: Opt[str], url: Opt[str]) -> None:
     """Create an Edium, cache it and write in file."""
     new_id = get_new_id()
     cached["edia"][new_id] = {
         "id": new_id,
         "title": title,
         "kind": kind,
-        "date": datetime.datetime.now().isoformat()
+        "date": datetime.datetime.now().isoformat(),
+        "extras": {}
     }
+    if url is not None:
+        cached["edia"][new_id]["extras"]["url"] = url
     write()
 
 
