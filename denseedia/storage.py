@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, Optional as Opt
+from typing import Any, cast, Dict, Optional as Opt
 
 import yaml
 from typing_extensions import TypedDict
@@ -21,17 +21,27 @@ class StorageType(TypedDict):
 
 def read() -> StorageType:
     """Read the file."""
+    processed: StorageType = {"edia": {}}
     try:
         with open(DB_PATH) as read_file:
-            return yaml.full_load(read_file)
+            raw = yaml.full_load(read_file)
+        for edium_id, raw_edium in raw["edia"].items():
+            edium = cast(EdiumType, dict(**raw_edium, id=edium_id))
+            processed["edia"][edium_id] = edium
+        return processed
     except FileNotFoundError:
-        return {"edia": {}}
+        return processed
 
 
 def write() -> None:
     """Write the cached data to the file."""
+    raw: Any = {"edia": {}}
+    for edium_id, edium in cached["edia"].items():
+        raw_edium = dict(**edium)
+        raw_edium.pop("id")
+        raw["edia"][edium_id] = raw_edium
     with open(DB_PATH, "w") as write_file:
-        yaml.dump(cached, write_file)
+        yaml.dump(raw, write_file)
 
 
 def get_new_id() -> int:
