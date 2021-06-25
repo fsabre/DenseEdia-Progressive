@@ -52,7 +52,12 @@ def get_new_id() -> int:
         return 1
 
 
-def add_edium(title: str, kind: Opt[str], url: Opt[str]) -> None:
+def add_edium(
+    title: str,
+    kind: Opt[str],
+    url: Opt[str],
+    comment: Opt[str]
+) -> None:
     """Create an Edium, cache it and write in file."""
     new_id = get_new_id()
     cached["edia"][new_id] = {
@@ -64,6 +69,9 @@ def add_edium(title: str, kind: Opt[str], url: Opt[str]) -> None:
     }
     if url is not None:
         cached["edia"][new_id]["extras"]["url"] = url
+    if comment is not None:
+        cached["edia"][new_id]["extras"]["comment"] = comment
+
     write()
 
 

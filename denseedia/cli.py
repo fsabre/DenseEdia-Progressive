@@ -26,7 +26,13 @@ def main_group():
 @click.argument("title", nargs=-1)
 @click.option("-k", "--kind", help="Optional kind for the Edium")
 @click.option("-u", "--url", help="Optional URL for the Edium")
-def add_edium(title: Seq[str], kind: Opt[str], url: Opt[str]) -> None:
+@click.option("-c", "--comment", help="Optional comment for the Edium")
+def add_edium(
+    title: Seq[str],
+    kind: Opt[str],
+    url: Opt[str],
+    comment: Opt[str]
+) -> None:
     # Infer title from options
     new_title: Opt[str] = None
     if len(title) > 0:
@@ -38,4 +44,4 @@ def add_edium(title: Seq[str], kind: Opt[str], url: Opt[str]) -> None:
     if new_title is None:
         raise click.UsageError("Couldn't infer title from options")
 
-    storage.add_edium(new_title, kind, url)
+    storage.add_edium(new_title, kind, url, comment)
