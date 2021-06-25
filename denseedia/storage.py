@@ -23,7 +23,7 @@ def read() -> StorageType:
     """Read the file."""
     processed: StorageType = {"edia": {}}
     try:
-        with open(DB_PATH) as read_file:
+        with open(DB_PATH, encoding="utf8") as read_file:
             raw = yaml.full_load(read_file)
         for edium_id, raw_edium in raw["edia"].items():
             edium = cast(EdiumType, dict(**raw_edium, id=edium_id))
@@ -40,8 +40,8 @@ def write() -> None:
         raw_edium = dict(**edium)
         raw_edium.pop("id")
         raw["edia"][edium_id] = raw_edium
-    with open(DB_PATH, "w") as write_file:
-        yaml.dump(raw, write_file)
+    with open(DB_PATH, "w", encoding="utf8") as write_file:
+        yaml.dump(raw, write_file, allow_unicode=True)
 
 
 def get_new_id() -> int:
