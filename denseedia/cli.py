@@ -2,8 +2,9 @@ from typing import Optional as Opt, Sequence as Seq
 
 import click
 from youtube_dl import DownloadError, YoutubeDL
+from .constants import DEFAULT_FILE_PATH
 
-from . import storage
+from .storage import Storage
 
 
 def get_title_from_url(url: str) -> Opt[str]:
@@ -44,4 +45,5 @@ def add_edium(
     if new_title is None:
         raise click.UsageError("Couldn't infer title from options")
 
+    storage = Storage(DEFAULT_FILE_PATH)
     storage.add_edium(new_title, kind, url, comment)
