@@ -37,11 +37,19 @@ class Storage:
 
     def write_file(self) -> None:
         """Write the data to the file."""
+        # Create the raw dict data
         raw: Any = {"edia": {}}
         for edium_id, edium in self.edia.items():
             raw_edium = dict(**edium)
             raw_edium.pop("id")
             raw["edia"][edium_id] = raw_edium
+
+        # Create the containing directory
+        parent_dir = self.path.parent
+        if not parent_dir.exists():
+            parent_dir.mkdir(parents=True, exist_ok=True)
+
+        # Write the YAML to a file
         with self.path.open("w", encoding="utf8") as write_file:
             yaml.dump(raw, write_file, allow_unicode=True)
 
