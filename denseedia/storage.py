@@ -2,17 +2,9 @@ from pathlib import Path
 from typing import Any, cast, Dict, Optional as Opt, Union
 
 import yaml
-from typing_extensions import TypedDict
 
 from .constants import now
-
-
-class EdiumType(TypedDict):
-    id: int
-    title: str
-    kind: Opt[str]
-    date: str
-    extras: Dict[str, Any]
+from .types import EdiumType
 
 
 class Storage:
