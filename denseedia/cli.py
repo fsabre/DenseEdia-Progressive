@@ -1,3 +1,4 @@
+import datetime
 import logging
 from pathlib import Path
 from typing import Optional as Opt, Sequence as Seq
@@ -8,6 +9,7 @@ from youtube_dl import DownloadError, YoutubeDL
 from . import exceptions, operations, tables
 from .constants import DEFAULT_FILE_NAME
 from .logger import logger
+from .types import SupportedValue
 
 
 def get_title_from_url(url: str) -> Opt[str]:
@@ -92,9 +94,58 @@ def show_edium(edium_id: int) -> None:
 @click.argument("edium_id", type=int)
 @click.argument("element_name")
 @click.argument("new_value")
-def set_element(edium_id: int, element_name: str, new_value: str) -> None:
+@click.option(
+    "-t",
+    "--type",
+    "value_type",
+    type=click.Choice(
+        ["NONE", "BOOL", "INT", "FLOAT", "STR", "DATETIME"],
+        case_sensitive=False
+    ),
+    default="STR"
+)
+@click.option(
+    "-y",
+    "--allow-type-change",
+    is_flag=True,
+    help="Allow to specify a different value type as the previous one"
+)
+def set_element(
+    edium_id: int,
+    element_name: str,
+    new_value: str,
+    value_type: str,
+    allow_type_change: bool
+) -> None:
+    value: SupportedValue
+    if value_type != "STR":
+        if value_type == "NONE":
+            value = None
+        elif value_type == "BOOL":
+            value = new_value.lower() in ("1", "true")
+        elif value_type == "INT":
+            value = int(new_value)
+        elif value_type == "FLOAT":
+            value = float(new_value)
+        elif value_type == "DATETIME":
+            value = datetime.datetime.fromisoformat(new_value)
+        else:
+            raise click.UsageError("Unsupported format")
+        logger.info("Value converted to %s : %r", value_type, value)
+    else:
+        value = new_value
     try:
         # Set the element value, after creating it if needed
-        operations.set_element_value(edium_id, element_name, new_value)
+        operations.set_element_value(
+            edium_id,
+            element_name,
+            value,
+            allow_type_change
+        )
+    except exceptions.ValueTypeChange as exc:
+        msg = (
+            f"{exc.args[0]}. You may want to use the --allow-type-change flag."
+        )
+        raise click.UsageError(msg)
     except exceptions.ObjectNotFound:
         raise click.UsageError(f"No Edium found with ID {edium_id}")

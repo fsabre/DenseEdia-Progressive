@@ -1,6 +1,7 @@
 from typing import List, Optional as Opt, Tuple
 
 from . import exceptions
+from .logger import logger
 from .tables import Edium, orm
 from .types import ElementSummary, SupportedValue, ValueType
 
@@ -32,26 +33,8 @@ def show_edium(edium_id: int) -> Tuple[Edium, List[ElementSummary]]:
     """Returns an edium and a summary of its elements."""
     try:
         with orm.db_session:
-            edium = Edium[edium_id]
-            # Fetch the last version of each of the Edium elements
-            query = orm.select(
-                (
-                    (element.name, version.type_idx, version.json)
-                    for element in edium.elements
-                    for version in element.versions
-                    if version.last is True
-                )
-            )
-            # Create a summary for each element from the query
-            elements = [
-                ElementSummary(
-                    name=name,
-                    type=ValueType(value_type),
-                    value=value
-                )
-                for (name, value_type, value) in query
-            ]
-            return edium, elements
+            edium: Edium = Edium[edium_id]
+            return edium, edium.get_all_element_summaries()
     except orm.ObjectNotFound:
         raise exceptions.ObjectNotFound()
 
@@ -59,12 +42,26 @@ def show_edium(edium_id: int) -> Tuple[Edium, List[ElementSummary]]:
 def set_element_value(
     edium_id: int,
     element_name: str,
-    element_value: SupportedValue
+    element_value: SupportedValue,
+    allow_type_change: bool = False
 ) -> None:
     """Change an element value from a Edium."""
     try:
         with orm.db_session:
-            edium = Edium[edium_id]
+            edium: Edium = Edium[edium_id]
+            element_su = edium.get_one_element_summary(element_name)
+            if not allow_type_change and element_su is not None:
+                # Let's compare the types and raise an exception if they differ.
+                logger.info("Comparing the old and new value types")
+                old_type = element_su.type
+                new_type = ValueType.infer_from_value(element_value)
+                logger.debug("Old = %s, new = %s", old_type.name, new_type.name)
+                if old_type != new_type:
+                    msg = (
+                        "Changing type is not allowed "
+                        f"({old_type.name} -> {new_type.name})"
+                    )
+                    raise exceptions.ValueTypeChange(msg)
             edium.set_element_value(element_name, element_value)
     except orm.ObjectNotFound:
         raise exceptions.ObjectNotFound()
