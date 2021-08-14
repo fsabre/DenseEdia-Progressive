@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional as Opt, Union
+from typing import NamedTuple, Optional as Opt, Union
 
 from .exceptions import UnsupportedTypeException
 
@@ -35,3 +35,9 @@ class ValueType(Enum):
     def index(self):
         """Simple alias for value, as it might be confusing."""
         return self.value
+
+
+class ElementSummary(NamedTuple):
+    name: str
+    type: ValueType
+    value: SupportedValue

@@ -5,7 +5,7 @@ from typing import Optional as Opt, Sequence as Seq
 import click
 from youtube_dl import DownloadError, YoutubeDL
 
-from . import operations, tables
+from . import exceptions, operations, tables
 from .constants import DEFAULT_FILE_NAME
 from .logger import logger
 
@@ -60,3 +60,20 @@ def add_edium(
 
     # Create and save the Edium
     operations.create_edium(new_title, kind, url, comment)
+
+
+@main_group.command(name="show", help="Display an Edium")
+@click.argument("edium_id", type=int)
+def show_edium(edium_id: int) -> None:
+    # Fetch the Edium and a summary of its elements
+    try:
+        edium, element_summaries = operations.show_edium(edium_id)
+    except exceptions.ObjectNotFound:
+        raise click.UsageError(f"No Edium found with ID {edium_id}")
+    # Print all the infos
+    click.echo(f"Edium n°{edium.id}: {edium.title} ({edium.kind})")
+    click.echo("=" * 10)
+    for element in element_summaries:
+        click.echo(
+            f"{element.name:<10} = {element.value} ({element.type.name})"
+        )
