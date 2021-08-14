@@ -3,8 +3,9 @@ from typing import Optional as Opt, Sequence as Seq
 import click
 from youtube_dl import DownloadError, YoutubeDL
 
+from . import operations
 from .constants import DEFAULT_FILE_PATH
-from .storage import Storage
+from .tables import use_database
 
 
 def get_title_from_url(url: str) -> Opt[str]:
@@ -21,7 +22,7 @@ def get_title_from_url(url: str) -> Opt[str]:
 @click.group()
 @click.option("-f", "--file", type=click.Path(), help="Target file")
 @click.pass_context
-def main_group(ctx: click.Context, file: str) -> None:
+def main_group(ctx: click.Context, file: Opt[str]) -> None:
     ctx.ensure_object(dict)
     ctx.obj["file"] = file
 
@@ -52,6 +53,8 @@ def add_edium(
     if new_title is None:
         raise click.UsageError("Couldn't infer title from options")
 
+    # Connect to the database
+    use_database(file)
+
     # Create and save the Edium
-    storage = Storage(file)
-    storage.add_edium(new_title, kind, url, comment)
+    operations.create_edium(new_title, kind, url, comment)

@@ -1,4 +1,5 @@
 click~=8.0.1
 mypy~=0.812
+pony~=0.7.14
 PyYAML~=5.4.1
 youtube-dl~=2021.6.6
