@@ -1,8 +1,10 @@
 from datetime import datetime
+from pathlib import Path
 
 from pony import orm
 
 from . import helpers
+from .logger import logger
 from .types import SupportedValue, ValueType
 
 database = orm.Database()
@@ -55,7 +57,8 @@ class Version(database.Entity):
         self.type_idx = new_type.index
 
 
-def use_database(filename: str, debug: bool = False) -> None:
+def use_database(file_path: Path, debug: bool = False) -> None:
     orm.set_sql_debug(debug)
-    database.bind(provider="sqlite", filename=filename, create_db=True)
+    logger.info("Use the database at %s", file_path)
+    database.bind(provider="sqlite", filename=str(file_path), create_db=True)
     database.generate_mapping(create_tables=True)

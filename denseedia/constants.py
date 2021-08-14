@@ -1,6 +1,6 @@
 import datetime
 
-DEFAULT_FILE_PATH = "db.db"
+DEFAULT_FILE_NAME = "db.db"
 
 
 def now() -> datetime.datetime:

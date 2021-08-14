@@ -1,11 +1,13 @@
+import logging
+from pathlib import Path
 from typing import Optional as Opt, Sequence as Seq
 
 import click
 from youtube_dl import DownloadError, YoutubeDL
 
-from . import operations
-from .constants import DEFAULT_FILE_PATH
-from .tables import use_database
+from . import operations, tables
+from .constants import DEFAULT_FILE_NAME
+from .logger import logger
 
 
 def get_title_from_url(url: str) -> Opt[str]:
@@ -21,10 +23,17 @@ def get_title_from_url(url: str) -> Opt[str]:
 
 @click.group()
 @click.option("-f", "--file", type=click.Path(), help="Target file")
-@click.pass_context
-def main_group(ctx: click.Context, file: Opt[str]) -> None:
-    ctx.ensure_object(dict)
-    ctx.obj["file"] = file
+@click.option("-v", "--verbose", count=True, help="Increase the verbosity")
+def main_group(file: Opt[str], verbose: int) -> None:
+    # Set the logger verbosity
+    if verbose >= 2:
+        logger.setLevel(logging.DEBUG)
+    elif verbose == 1:
+        logger.setLevel(logging.INFO)
+    # Use the proper file
+    file_name: str = file or DEFAULT_FILE_NAME
+    file_path = Path().joinpath(file_name).absolute().resolve()
+    tables.use_database(file_path)
 
 
 @main_group.command(name="add", help="Create a new Edium")
@@ -32,16 +41,12 @@ def main_group(ctx: click.Context, file: Opt[str]) -> None:
 @click.option("-k", "--kind", help="Optional kind for the Edium")
 @click.option("-u", "--url", help="Optional URL for the Edium")
 @click.option("-c", "--comment", help="Optional comment for the Edium")
-@click.pass_context
 def add_edium(
-    ctx: click.Context,
     title: Seq[str],
     kind: Opt[str],
     url: Opt[str],
     comment: Opt[str]
 ) -> None:
-    file: str = ctx.obj["file"] or DEFAULT_FILE_PATH
-
     # Infer title from options
     new_title: Opt[str] = None
     if len(title) > 0:
@@ -52,9 +57,6 @@ def add_edium(
         click.echo(f"Title : {new_title}")
     if new_title is None:
         raise click.UsageError("Couldn't infer title from options")
-
-    # Connect to the database
-    use_database(file)
 
     # Create and save the Edium
     operations.create_edium(new_title, kind, url, comment)
