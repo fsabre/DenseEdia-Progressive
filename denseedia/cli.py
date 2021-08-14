@@ -86,3 +86,15 @@ def show_edium(edium_id: int) -> None:
         click.echo(
             f"{element.name:<10} = {element.value} ({element.type.name})"
         )
+
+
+@main_group.command(name="set", help="Change an element value")
+@click.argument("edium_id", type=int)
+@click.argument("element_name")
+@click.argument("new_value")
+def set_element(edium_id: int, element_name: str, new_value: str) -> None:
+    try:
+        # Set the element value, after creating it if needed
+        operations.set_element_value(edium_id, element_name, new_value)
+    except exceptions.ObjectNotFound:
+        raise click.UsageError(f"No Edium found with ID {edium_id}")

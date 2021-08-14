@@ -2,7 +2,7 @@ from typing import List, Optional as Opt, Tuple
 
 from . import exceptions
 from .tables import Edium, orm
-from .types import ElementSummary, ValueType
+from .types import ElementSummary, SupportedValue, ValueType
 
 
 def create_edium(
@@ -17,9 +17,9 @@ def create_edium(
     with orm.db_session:
         edium = Edium(title=title, kind=kind)
         if url is not None:
-            edium.add_element("url", url)
+            edium.create_element("url", url)
         if comment is not None:
-            edium.add_element("comment", comment)
+            edium.create_element("comment", comment)
 
 
 def list_edia() -> List[Edium]:
@@ -52,5 +52,19 @@ def show_edium(edium_id: int) -> Tuple[Edium, List[ElementSummary]]:
                 for (name, value_type, value) in query
             ]
             return edium, elements
+    except orm.ObjectNotFound:
+        raise exceptions.ObjectNotFound()
+
+
+def set_element_value(
+    edium_id: int,
+    element_name: str,
+    element_value: SupportedValue
+) -> None:
+    """Change an element value from a Edium."""
+    try:
+        with orm.db_session:
+            edium = Edium[edium_id]
+            edium.set_element_value(element_name, element_value)
     except orm.ObjectNotFound:
         raise exceptions.ObjectNotFound()

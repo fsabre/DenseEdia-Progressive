@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+from typing import Optional as Opt
 
 from pony import orm
 
@@ -16,9 +17,29 @@ class Edium(database.Entity):
     creation_date = orm.Required(datetime, default=helpers.now)
     elements = orm.Set("Element")
 
-    def add_element(self, name: str, value: SupportedValue) -> "Element":
-        element = Element(edium=self, name=name)
-        element.set_value(value)
+    def set_element_value(
+        self,
+        element_name: str,
+        new_value: SupportedValue,
+    ) -> None:
+        """Create the element if needed, then create its version."""
+        # Fetch the element with the right name
+        element: Opt[Element] = (
+            self.elements
+                .filter(lambda el: el.name == element_name)
+                .get()
+        )
+        if element is None:
+            # Create a new element if it didn't exist
+            self.create_element(element_name, new_value)
+        else:
+            # Create a new version if the element already exists
+            element.create_version(new_value)
+
+    def create_element(self, name: str, value: SupportedValue) -> "Element":
+        """Create a new element and its version with the given value."""
+        element = self.elements.create(name=name)
+        element.create_version(value)
         return element
 
 
@@ -29,7 +50,8 @@ class Element(database.Entity):
     todo = orm.Required(bool, default=False)
     versions = orm.Set("Version")
 
-    def set_value(self, value: SupportedValue) -> "Version":
+    def create_version(self, value: SupportedValue) -> "Version":
+        """Create a new version with the new value."""
         # Mark all the others versions as "not used"
         query = self.versions.select().for_update()
         for version in query:
