@@ -22,6 +22,12 @@ def create_edium(
             edium.add_element("comment", comment)
 
 
+def list_edia() -> List[Edium]:
+    """Return a list of all the Edia."""
+    with orm.db_session:
+        return Edium.select()[:]
+
+
 def show_edium(edium_id: int) -> Tuple[Edium, List[ElementSummary]]:
     """Returns an edium and a summary of its elements."""
     try:

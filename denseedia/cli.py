@@ -62,6 +62,15 @@ def add_edium(
     operations.create_edium(new_title, kind, url, comment)
 
 
+@main_group.command(name="list", help="List all Edia")
+def list_edia() -> None:
+    # Fetch all Edia
+    edia = operations.list_edia()
+    # Print them
+    for edium in edia:
+        click.echo(f"N°{edium.id}: {edium.title} ({edium.kind})")
+
+
 @main_group.command(name="show", help="Display an Edium")
 @click.argument("edium_id", type=int)
 def show_edium(edium_id: int) -> None:
