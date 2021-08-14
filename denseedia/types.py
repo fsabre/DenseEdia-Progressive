@@ -1,19 +1,8 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional as Opt, Union
-
-from typing_extensions import TypedDict
+from typing import Optional as Opt, Union
 
 from .exceptions import UnsupportedTypeException
-
-
-class EdiumType(TypedDict):
-    id: int
-    title: str
-    kind: Opt[str]
-    date: str
-    extras: Dict[str, Any]
-
 
 SupportedValue = Opt[Union[bool, int, float, str, datetime]]
 
