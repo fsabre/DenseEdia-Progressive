@@ -1,3 +1,5 @@
+"""Define ORM classes."""
+
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional as Opt
@@ -12,12 +14,13 @@ database = orm.Database()
 
 
 class Edium(database.Entity):
+    """The main piece of information stored in DenseEdia."""
     title = orm.Required(str)
     kind = orm.Optional(str)
     creation_date = orm.Required(datetime, default=helpers.now)
     elements = orm.Set("Element")
 
-    def get_element_with_name(self, element_name: str) -> Opt["Element"]:
+    def get_element_by_name(self, element_name: str) -> Opt["Element"]:
         """Get an element by its name."""
         return (
             self.elements
@@ -32,7 +35,7 @@ class Edium(database.Entity):
     ) -> None:
         """Create the element if needed, then create its version."""
         # Fetch the element with the right name
-        element = self.get_element_with_name(element_name)
+        element = self.get_element_by_name(element_name)
         if element is None:
             # Create a new element if it didn't exist
             logger.debug("The element %s doesn't exist yet", element_name)
@@ -50,13 +53,13 @@ class Edium(database.Entity):
 
     def get_one_element_summary(self, element_name: str) -> Opt[ElementSummary]:
         """Create the summary of one element, found by name."""
-        element = self.get_element_with_name(element_name)
+        element = self.get_element_by_name(element_name)
         if element is None:
             return None
         version = element.last_version
         return ElementSummary(
             name=element.name,
-            type=ValueType(version.type_idx),
+            type=version.value_type,
             value=version.json
         )
 
@@ -83,6 +86,7 @@ class Edium(database.Entity):
 
 
 class Element(database.Entity):
+    """A property of an Edium that can have different value types."""
     edium = orm.Required("Edium")
     name = orm.Required(str)
     creation_date = orm.Required(datetime, default=helpers.now)
@@ -92,7 +96,7 @@ class Element(database.Entity):
     def create_version(self, value: SupportedValue) -> "Version":
         """Create a new version with the new value."""
         # Mark all the others versions as "not used"
-        query = self.versions.select().for_update()
+        query = self.versions.select(lambda ver: ver.last is True).for_update()
         for version in query:
             version.last = False
         # Add the new version
@@ -103,15 +107,11 @@ class Element(database.Entity):
 
     @property
     def last_version(self) -> "Version":
-        return orm.select(
-            (
-                ver for ver in self.versions
-                if ver.last is True
-            )
-        ).get()
+        return self.versions.select(lambda ver: ver.last is True).get()
 
 
 class Version(database.Entity):
+    """A version is a record of an element value at a given time."""
     element = orm.Required("Element")
     type_idx = orm.Required(int)
     json = orm.Required(orm.Json)

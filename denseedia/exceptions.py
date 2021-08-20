@@ -1,3 +1,6 @@
+"""Define some exceptions."""
+
+
 class DenseEdiaException(Exception):
     pass
 

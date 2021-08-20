@@ -1,3 +1,5 @@
+"""Define functions that link the ORM classes and the frontend (CLI or API)."""
+
 from typing import List, Optional as Opt, Tuple
 
 from . import exceptions
@@ -49,11 +51,11 @@ def set_element_value(
     try:
         with orm.db_session:
             edium: Edium = Edium[edium_id]
-            element_su = edium.get_one_element_summary(element_name)
-            if not allow_type_change and element_su is not None:
+            el_summary = edium.get_one_element_summary(element_name)
+            if not allow_type_change and el_summary is not None:
                 # Let's compare the types and raise an exception if they differ.
                 logger.info("Comparing the old and new value types")
-                old_type = element_su.type
+                old_type = el_summary.type
                 new_type = ValueType.infer_from_value(element_value)
                 logger.debug("Old = %s, new = %s", old_type.name, new_type.name)
                 if old_type != new_type:

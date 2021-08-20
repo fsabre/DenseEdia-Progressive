@@ -1,3 +1,5 @@
+"""Define types for static typing."""
+
 from datetime import datetime
 from enum import Enum
 from typing import NamedTuple, Optional as Opt, Union

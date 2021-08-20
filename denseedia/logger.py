@@ -1,3 +1,5 @@
+"""Define the main logger."""
+
 import logging
 
 logger = logging.getLogger("denseedia")

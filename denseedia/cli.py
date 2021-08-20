@@ -1,26 +1,16 @@
+"""Define the command line interface."""
+
 import datetime
 import logging
 from pathlib import Path
 from typing import Optional as Opt, Sequence as Seq
 
 import click
-from youtube_dl import DownloadError, YoutubeDL
 
-from . import exceptions, operations, tables
+from . import exceptions, helpers, operations, tables
 from .constants import DEFAULT_FILE_NAME
 from .logger import logger
 from .types import SupportedValue
-
-
-def get_title_from_url(url: str) -> Opt[str]:
-    """Return a fitting title for the URL. None if not found."""
-    try:
-        opts = {"quiet": True, "simulate": True}
-        with YoutubeDL(opts) as ydl:
-            video_info = ydl.extract_info(url)
-            return video_info.get("title", None)
-    except DownloadError:
-        return None
 
 
 @click.group()
@@ -55,7 +45,7 @@ def add_edium(
         new_title = " ".join(title)
     elif url is not None:
         click.echo("Extract title from the URL")
-        new_title = get_title_from_url(url)
+        new_title = helpers.get_url_title(url)
         click.echo(f"Title : {new_title}")
     if new_title is None:
         raise click.UsageError("Couldn't infer title from options")
