@@ -43,3 +43,9 @@ class ElementSummary(NamedTuple):
     name: str
     type: ValueType
     value: SupportedValue
+
+
+class Direction:
+    TO = 1
+    FROM = 2
+    NONE = 3

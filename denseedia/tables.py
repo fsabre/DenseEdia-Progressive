@@ -19,6 +19,8 @@ class Edium(database.Entity):
     kind = orm.Optional(str)
     creation_date = orm.Required(datetime, default=helpers.now)
     elements = orm.Set("Element")
+    links1 = orm.Set("Link", reverse="edium1")
+    links2 = orm.Set("Link", reverse="edium2")
 
     def get_element_by_name(self, element_name: str) -> Opt["Element"]:
         """Get an element by its name."""
@@ -111,7 +113,7 @@ class Element(database.Entity):
 
 
 class Version(database.Entity):
-    """A version is a record of an element value at a given time."""
+    """A record of an element value at a given time."""
     element = orm.Required("Element")
     type_idx = orm.Required(int)
     json = orm.Required(orm.Json)
@@ -127,8 +129,16 @@ class Version(database.Entity):
         self.type_idx = new_type.index
 
 
+class Link(database.Entity):
+    """A link between two Edia."""
+    edium1 = orm.Required(Edium)
+    edium2 = orm.Required(Edium)
+    direction = orm.Required(int)
+    label = orm.Optional(str)
+
+
 def use_database(file_path: Path, debug: bool = False) -> None:
-    orm.set_sql_debug(debug)
     logger.info("Use the database at %s", file_path)
     database.bind(provider="sqlite", filename=str(file_path), create_db=True)
     database.generate_mapping(create_tables=True)
+    orm.set_sql_debug(debug)

@@ -139,3 +139,11 @@ def set_element(
         raise click.UsageError(msg)
     except exceptions.ObjectNotFound:
         raise click.UsageError(f"No Edium found with ID {edium_id}")
+
+
+@main_group.command(name="link", help="Link two Edia")
+@click.argument("edium1_id", type=int)
+@click.argument("edium2_id", type=int)
+@click.option("-l", "--label", help="Label of the link")
+def link_edia(edium1_id: int, edium2_id: int, label: str):
+    operations.link_edia(edium1_id, edium2_id, label)

@@ -4,8 +4,8 @@ from typing import List, Optional as Opt, Tuple
 
 from . import exceptions
 from .logger import logger
-from .tables import Edium, orm
-from .types import ElementSummary, SupportedValue, ValueType
+from .tables import Edium, Link, orm
+from .types import Direction, ElementSummary, SupportedValue, ValueType
 
 
 def create_edium(
@@ -65,5 +65,21 @@ def set_element_value(
                     )
                     raise exceptions.ValueTypeChange(msg)
             edium.set_element_value(element_name, element_value)
+    except orm.ObjectNotFound:
+        raise exceptions.ObjectNotFound()
+
+
+def link_edia(edium1_id: int, edium2_id: int, label: str) -> None:
+    """Link two Edia together."""
+    try:
+        with orm.db_session:
+            edium1: Edium = Edium[edium1_id]
+            edium2: Edium = Edium[edium2_id]
+            Link(
+                edium1=edium1,
+                edium2=edium2,
+                label=label,
+                direction=Direction.TO
+            )
     except orm.ObjectNotFound:
         raise exceptions.ObjectNotFound()
