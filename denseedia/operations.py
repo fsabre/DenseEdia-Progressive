@@ -3,9 +3,28 @@
 from typing import List, Optional as Opt, Tuple
 
 from . import exceptions
+from .customtypes import Direction, ElementSummary, SupportedValue, ValueType
 from .logger import logger
 from .tables import Edium, Link, orm
-from .types import Direction, ElementSummary, SupportedValue, ValueType
+
+
+def _compare_element_types(
+    edium: Edium,
+    element_name: str,
+    new_value: SupportedValue
+) -> None:
+    """Raises an ValueTypeChange exception if the types are different."""
+    el_summary = edium.get_one_element_summary(element_name)
+    if el_summary is not None:
+        # Let's compare the types and raise an exception if they differ.
+        logger.info("Comparing the old and new value types")
+        old_type = el_summary.type
+        old_type_name = ValueType.name(old_type)
+        new_type = ValueType.of(new_value)
+        new_type_name = ValueType.name(new_type)
+        logger.debug("Old = %s, new = %s", old_type_name, new_type_name)
+        if old_type != new_type:
+            raise exceptions.ValueTypeChange(old_type_name, new_type_name)
 
 
 def create_edium(
@@ -51,19 +70,14 @@ def set_element_value(
     try:
         with orm.db_session:
             edium: Edium = Edium[edium_id]
-            el_summary = edium.get_one_element_summary(element_name)
-            if not allow_type_change and el_summary is not None:
-                # Let's compare the types and raise an exception if they differ.
-                logger.info("Comparing the old and new value types")
-                old_type = el_summary.type
-                new_type = ValueType.infer_from_value(element_value)
-                logger.debug("Old = %s, new = %s", old_type.name, new_type.name)
-                if old_type != new_type:
-                    msg = (
-                        "Changing type is not allowed "
-                        f"({old_type.name} -> {new_type.name})"
-                    )
-                    raise exceptions.ValueTypeChange(msg)
+            if not allow_type_change:
+                # Raises an exception if the user try to change the type of the
+                # value
+                _compare_element_types(
+                    edium,
+                    element_name,
+                    element_value
+                )
             edium.set_element_value(element_name, element_value)
     except orm.ObjectNotFound:
         raise exceptions.ObjectNotFound()

@@ -7,8 +7,8 @@ from typing import List, Optional as Opt
 from pony import orm
 
 from . import helpers
+from .customtypes import ElementSummary, SupportedValue, ValueType
 from .logger import logger
-from .types import ElementSummary, SupportedValue, ValueType
 
 database = orm.Database()
 
@@ -24,11 +24,8 @@ class Edium(database.Entity):
 
     def get_element_by_name(self, element_name: str) -> Opt["Element"]:
         """Get an element by its name."""
-        return (
-            self.elements
-                .filter(lambda el: el.name == element_name)
-                .get()
-        )
+        query = self.elements.filter(lambda el: el.name == element_name)
+        return query.get()
 
     def set_element_value(
         self,
@@ -70,7 +67,7 @@ class Edium(database.Entity):
         # Fetch the last version of each of the elements
         query = orm.select(
             (
-                (element.name, version.type_idx, version.json)
+                (element.name, version.value_type, version.json)
                 for element in self.elements
                 for version in element.versions
                 if version.last is True
@@ -80,10 +77,10 @@ class Edium(database.Entity):
         return [
             ElementSummary(
                 name=name,
-                type=ValueType(type_idx),
+                type=value_type,
                 value=value
             )
-            for (name, type_idx, value) in query
+            for (name, value_type, value) in query
         ]
 
 
@@ -103,7 +100,7 @@ class Element(database.Entity):
             version.last = False
         # Add the new version
         return self.versions.create(
-            type_idx=ValueType.infer_from_value(value).index,
+            value_type=ValueType.of(value),
             json=value
         )
 
@@ -115,18 +112,10 @@ class Element(database.Entity):
 class Version(database.Entity):
     """A record of an element value at a given time."""
     element = orm.Required("Element")
-    type_idx = orm.Required(int)
+    value_type = orm.Required(int)
     json = orm.Required(orm.Json)
     last = orm.Required(bool, default=True)
     creation_date = orm.Required(datetime, default=helpers.now)
-
-    @property
-    def value_type(self) -> ValueType:
-        return ValueType(self.type_idx)
-
-    @value_type.setter
-    def value_type(self, new_type: ValueType) -> None:
-        self.type_idx = new_type.index
 
 
 class Link(database.Entity):

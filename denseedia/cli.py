@@ -9,8 +9,8 @@ import click
 
 from . import exceptions, helpers, operations, tables
 from .constants import DEFAULT_FILE_NAME
+from .customtypes import SupportedValue, ValueType
 from .logger import logger
-from .types import SupportedValue
 
 
 @click.group()
@@ -75,8 +75,9 @@ def show_edium(edium_id: int) -> None:
     click.echo(f"Edium n°{edium.id}: {edium.title} ({edium.kind})")
     click.echo("=" * 10)
     for element in element_summaries:
+        value_type_name = ValueType.name(element.type)
         click.echo(
-            f"{element.name:<10} = {element.value} ({element.type.name})"
+            f"{element.name:<10} = {element.value} ({value_type_name})"
         )
 
 
