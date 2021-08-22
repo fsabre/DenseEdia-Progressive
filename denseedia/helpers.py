@@ -3,11 +3,10 @@
 import datetime
 from typing import Optional as Opt
 
-from youtube_dl import DownloadError, YoutubeDL
-
 
 def get_url_title(url: str) -> Opt[str]:
     """Return a fitting title for the URL. None if not found."""
+    from youtube_dl import DownloadError, YoutubeDL
     try:
         opts = {"quiet": True, "simulate": True}
         with YoutubeDL(opts) as ydl:
