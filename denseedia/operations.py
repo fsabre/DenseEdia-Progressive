@@ -120,8 +120,9 @@ def get_element_versions(
         return element, list(query)
 
 
-def create_link(edium1_id: int, edium2_id: int, label: str) -> None:
+def create_link(edium1_id: int, edium2_id: int, label: Opt[str]) -> None:
     """Link two Edia together."""
+    label = "" if label is None else label
     with orm.db_session:
         edium1: Edium = Edium[edium1_id]
         if edium1 is None:
