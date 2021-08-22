@@ -1,12 +1,18 @@
 """Define some exceptions."""
 
+from typing import Union
+
 
 class DenseEdiaException(Exception):
     pass
 
 
 class ObjectNotFound(DenseEdiaException):
-    pass
+    def __init__(self, table: str, selector: Union[int, str]):
+        msg = f"{table.capitalize()} '{selector}' not found"
+        super().__init__(msg)
+        self.table = table
+        self.selector = selector
 
 
 class ValueTypeChange(DenseEdiaException):

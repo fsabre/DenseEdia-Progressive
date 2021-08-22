@@ -1,6 +1,7 @@
 """Define the command line interface."""
 
 import datetime
+import functools
 import logging
 from pathlib import Path
 from typing import Optional as Opt, Sequence as Seq
@@ -11,6 +12,27 @@ from . import exceptions, helpers, operations, tables
 from .constants import DEFAULT_FILE_NAME
 from .customtypes import SupportedValue, ValueType
 from .logger import logger
+
+
+def translate_exceptions(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except exceptions.ObjectNotFound as exc:
+            raise click.UsageError(exc.args[0])
+        except exceptions.ValueTypeChange as exc:
+            msg = (
+                f"{exc.args[0]}. You may want to specify the type of the value "
+                "with --type, or use the --allow-type-change flag."
+            )
+            raise click.UsageError(msg)
+
+    return wrapper
+
+
+def edium_as_string(edium: tables.Edium) -> str:
+    return f"Edium n°{edium.id}: {edium.title} ({edium.kind})"
 
 
 @click.group()
@@ -28,7 +50,7 @@ def main_group(file: Opt[str], verbose: int) -> None:
     tables.use_database(file_path)
 
 
-@main_group.command(name="add", help="Create a new Edium")
+@main_group.command(name="add-edium", help="Create a new Edium")
 @click.argument("title", nargs=-1)
 @click.option("-k", "--kind", help="Optional kind for the Edium")
 @click.option("-u", "--url", help="Optional URL for the Edium")
@@ -54,35 +76,62 @@ def add_edium(
     operations.create_edium(new_title, kind, url, comment)
 
 
+@main_group.command(name="add-link", help="Create a link between two Edia")
+@click.argument("edium1_id", type=int)
+@click.argument("edium2_id", type=int)
+@click.option("-l", "--label", help="Label of the link")
+def add_link(edium1_id: int, edium2_id: int, label: str):
+    operations.create_link(edium1_id, edium2_id, label)
+
+
 @main_group.command(name="list", help="List all Edia")
 def list_edia() -> None:
     # Fetch all Edia
-    edia = operations.list_edia()
+    edia = operations.get_all_edia()
     # Print them
     for edium in edia:
-        click.echo(f"N°{edium.id}: {edium.title} ({edium.kind})")
+        click.echo(edium_as_string(edium))
 
 
-@main_group.command(name="show", help="Display an Edium")
+@main_group.group("edium", help="Operations on an Edium")
 @click.argument("edium_id", type=int)
-def show_edium(edium_id: int) -> None:
+@click.pass_context
+def edium_group(context: click.Context, edium_id: int):
+    context.ensure_object(dict)
+    context.obj["edium_id"] = edium_id
+
+
+@edium_group.command(name="show", help="Display an Edium")
+@click.pass_context
+@translate_exceptions
+def edium_show(context: click.Context) -> None:
+    edium_id = context.obj["edium_id"]
     # Fetch the Edium and a summary of its elements
-    try:
-        edium, element_summaries = operations.show_edium(edium_id)
-    except exceptions.ObjectNotFound:
-        raise click.UsageError(f"No Edium found with ID {edium_id}")
+    edium, element_summaries, links = operations.get_one_edium_details(edium_id)
     # Print all the infos
-    click.echo(f"Edium n°{edium.id}: {edium.title} ({edium.kind})")
+    click.echo(edium_as_string(edium))
     click.echo("=" * 10)
     for element in element_summaries:
         value_type_name = ValueType.name(element.type)
         click.echo(
             f"{element.name:<10} = {element.value} ({value_type_name})"
         )
+    click.echo("=" * 10)
+    for link in links:
+        if link.end is edium:
+            direction_str = "<=="
+            other_edium_str = edium_as_string(link.start)
+        else:
+            direction_str = "==>"
+            other_edium_str = edium_as_string(link.end)
+        if not link.directed:
+            direction_str = "<=>"
+        click.echo(
+            f"Link n°{link.id} ({link.label}) : {direction_str} {other_edium_str}"
+        )
 
 
-@main_group.command(name="set", help="Change an element value")
-@click.argument("edium_id", type=int)
+@edium_group.command(name="set", help="Change an element value")
 @click.argument("element_name")
 @click.argument("new_value")
 @click.option(
@@ -101,13 +150,16 @@ def show_edium(edium_id: int) -> None:
     is_flag=True,
     help="Allow to specify a different value type as the previous one"
 )
-def set_element(
-    edium_id: int,
+@click.pass_context
+@translate_exceptions
+def edium_set(
+    context: click.Context,
     element_name: str,
     new_value: str,
     value_type: str,
     allow_type_change: bool
 ) -> None:
+    edium_id = context.obj["edium_id"]
     value: SupportedValue
     if value_type != "STR":
         if value_type == "NONE":
@@ -125,26 +177,93 @@ def set_element(
         logger.info("Value converted to %s : %r", value_type, value)
     else:
         value = new_value
-    try:
-        # Set the element value, after creating it if needed
-        operations.set_element_value(
-            edium_id,
-            element_name,
-            value,
-            allow_type_change
-        )
-    except exceptions.ValueTypeChange as exc:
-        msg = (
-            f"{exc.args[0]}. You may want to use the --allow-type-change flag."
-        )
-        raise click.UsageError(msg)
-    except exceptions.ObjectNotFound:
-        raise click.UsageError(f"No Edium found with ID {edium_id}")
+    # Set the element value, after creating it if needed
+    operations.set_element_value(
+        edium_id,
+        element_name,
+        value,
+        allow_type_change
+    )
 
 
-@main_group.command(name="link", help="Link two Edia")
-@click.argument("edium1_id", type=int)
-@click.argument("edium2_id", type=int)
-@click.option("-l", "--label", help="Label of the link")
-def link_edia(edium1_id: int, edium2_id: int, label: str):
-    operations.link_edia(edium1_id, edium2_id, label)
+@edium_group.command(name="edit", help="Edit an Edium")
+@click.option("-t", "--title", help="New title for the edium")
+@click.option("-k", "--kind", help="New kind for the edium")
+@click.pass_context
+@translate_exceptions
+def edium_edit(
+    context: click.Context,
+    title: Opt[str],
+    kind: Opt[str],
+) -> None:
+    edium_id: int = context.obj["edium_id"]
+    operations.edit_edium(edium_id, title, kind)
+
+
+@edium_group.command(name="delete", help="Delete an Edium")
+@click.confirmation_option(prompt="Remove the Edium and all its history ?")
+@click.pass_context
+@translate_exceptions
+def edium_delete(context: click.Context) -> None:
+    edium_id: int = context.obj["edium_id"]
+    operations.delete_edium(edium_id)
+
+
+@edium_group.command(name="history", help="Show the history of an element")
+@click.argument("element_name")
+@click.pass_context
+@translate_exceptions
+def edium_history(context: click.Context, element_name: str) -> None:
+    edium_id: int = context.obj["edium_id"]
+    # Fetch the data
+    element, versions = operations.get_element_versions(edium_id, element_name)
+    # Print it
+    click.echo(f"Element n°{element.id} : {element.name}")
+    click.echo("=" * 10)
+    for version in versions:
+        date = version.creation_date
+        value_type_name = ValueType.name(version.value_type)
+        click.echo(f"{date} : {version.json} ({value_type_name})")
+
+
+@main_group.group("link", help="Operations on a link")
+@click.argument("link_id", type=int)
+@click.pass_context
+def link_group(context: click.Context, link_id: int):
+    context.ensure_object(dict)
+    context.obj["link_id"] = link_id
+
+
+@link_group.command(name="show", help="Display a link")
+@click.pass_context
+@translate_exceptions
+def link_show(context: click.Context) -> None:
+    link_id = context.obj["link_id"]
+    # Fetch the link
+    link = operations.get_one_link_details(link_id)
+    # Print all the infos
+    click.echo(f"Link n°{link.id} ({link.label})")
+    click.echo("=" * 10)
+    click.echo(edium_as_string(link.start))
+    click.echo("==>" if link.directed else "<=>")
+    click.echo(edium_as_string(link.end))
+
+
+@link_group.command(name="edit", help="Edit a link")
+@click.option("-l", "--label", help="New label for the link")
+@click.pass_context
+@translate_exceptions
+def link_edit(
+    context: click.Context,
+    label: Opt[str],
+) -> None:
+    link_id: int = context.obj["link_id"]
+    operations.edit_link(link_id, label)
+
+
+@link_group.command(name="delete", help="Delete a link")
+@click.pass_context
+@translate_exceptions
+def link_delete(context: click.Context) -> None:
+    link_id: int = context.obj["link_id"]
+    operations.delete_link(link_id)

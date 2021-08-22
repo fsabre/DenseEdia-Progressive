@@ -19,8 +19,8 @@ class Edium(database.Entity):
     kind = orm.Optional(str)
     creation_date = orm.Required(datetime, default=helpers.now)
     elements = orm.Set("Element")
-    links1 = orm.Set("Link", reverse="edium1")
-    links2 = orm.Set("Link", reverse="edium2")
+    links_out = orm.Set("Link", reverse="start")
+    links_in = orm.Set("Link", reverse="end")
 
     def get_element_by_name(self, element_name: str) -> Opt["Element"]:
         """Get an element by its name."""
@@ -120,9 +120,9 @@ class Version(database.Entity):
 
 class Link(database.Entity):
     """A link between two Edia."""
-    edium1 = orm.Required(Edium)
-    edium2 = orm.Required(Edium)
-    direction = orm.Required(int)
+    start = orm.Required(Edium)
+    end = orm.Required(Edium)
+    directed = orm.Required(bool)
     label = orm.Optional(str)
 
 
