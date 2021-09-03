@@ -93,6 +93,17 @@ def list_edia() -> None:
         click.echo(edium_as_string(edium))
 
 
+@main_group.command(name="search", help="Search for Edia")
+@click.option("-t", "--title", "in_title", help="Part of the title of the Edia")
+@click.option("-k", "--kind", help="Kind of the Edia")
+def search_edia(in_title: Opt[str], kind: Opt[str]) -> None:
+    if in_title is None and kind is None:
+        raise click.UsageError("Please provide an option")
+    edia = operations.search_edia(in_title, kind)
+    for edium in edia:
+        click.echo(edium_as_string(edium))
+
+
 @main_group.group("edium", help="Operations on an Edium")
 @click.argument("edium_id", type=int)
 @click.pass_context

@@ -50,6 +50,19 @@ def get_all_edia() -> List[Edium]:
         return Edium.select()[:]
 
 
+def search_edia(in_title: Opt[str], kind: Opt[str]) -> List[Edium]:
+    """Return a list of Edia of the given kind, with the given string in title.
+    """
+    with orm.db_session:
+        query = Edium.select()
+        if kind is not None:
+            query = query.filter(lambda edium: edium.kind == kind)
+        if in_title is not None:
+            query = query.filter(lambda edium: in_title in edium.title)
+        rv = list(query)
+    return rv
+
+
 def get_one_edium_details(
     edium_id: int
 ) -> Tuple[Edium, List[ElementSummary], List[Link]]:
