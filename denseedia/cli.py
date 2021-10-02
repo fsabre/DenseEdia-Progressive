@@ -182,7 +182,10 @@ def edium_set(
         elif value_type == "FLOAT":
             value = float(new_value)
         elif value_type == "DATETIME":
-            value = datetime.datetime.fromisoformat(new_value)
+            if new_value == "now":
+                value = helpers.now()
+            else:
+                value = datetime.datetime.fromisoformat(new_value)
         else:
             raise click.UsageError("Unsupported format")
         logger.info("Value converted to %s : %r", value_type, value)
@@ -234,7 +237,7 @@ def edium_history(context: click.Context, element_name: str) -> None:
     for version in versions:
         date = version.creation_date
         value_type_name = ValueType.name(version.value_type)
-        click.echo(f"{date} : {version.json} ({value_type_name})")
+        click.echo(f"{date} : {version.get_value()} ({value_type_name})")
 
 
 @main_group.group("link", help="Operations on a link")

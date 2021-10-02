@@ -13,6 +13,20 @@ from .logger import logger
 database = orm.Database()
 
 
+def value_to_json(value_type: ValueType, value: SupportedValue):
+    if value_type == ValueType.DATETIME:
+        return value.isoformat()
+    else:
+        return value
+
+
+def json_to_value(value_type: ValueType, json) -> SupportedValue:
+    if value_type == ValueType.DATETIME:
+        return datetime.fromisoformat(json)
+    else:
+        return json
+
+
 class Edium(database.Entity):
     """The main piece of information stored in DenseEdia."""
     title = orm.Required(str)
@@ -59,7 +73,7 @@ class Edium(database.Entity):
         return ElementSummary(
             name=element.name,
             type=version.value_type,
-            value=version.json
+            value=version.get_value(),
         )
 
     def get_all_element_summaries(self) -> List[ElementSummary]:
@@ -67,7 +81,7 @@ class Edium(database.Entity):
         # Fetch the last version of each of the elements
         query = orm.select(
             (
-                (element.name, version.value_type, version.json)
+                (element.name, version)
                 for element in self.elements
                 for version in element.versions
                 if version.last is True
@@ -77,10 +91,10 @@ class Edium(database.Entity):
         return [
             ElementSummary(
                 name=name,
-                type=value_type,
-                value=value
+                type=version.value_type,
+                value=version.get_value(),
             )
-            for (name, value_type, value) in query
+            for (name, version) in query
         ]
 
 
@@ -99,9 +113,10 @@ class Element(database.Entity):
         for version in query:
             version.last = False
         # Add the new version
+        new_value_type = ValueType.of(value)
         return self.versions.create(
-            value_type=ValueType.of(value),
-            json=value
+            value_type=new_value_type,
+            json=value_to_json(new_value_type, value),
         )
 
     @property
@@ -116,6 +131,9 @@ class Version(database.Entity):
     json = orm.Required(orm.Json)
     last = orm.Required(bool, default=True)
     creation_date = orm.Required(datetime, default=helpers.now)
+
+    def get_value(self) -> SupportedValue:
+        return json_to_value(self.value_type, self.json)
 
 
 class Link(database.Entity):
