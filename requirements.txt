@@ -1,3 +1,6 @@
 click~=8.0.1
+fastapi~=0.72.0
 pony~=0.7.14
+pydantic~=1.8.2
+uvicorn~=0.17.0
 youtube-dl~=2021.6.6

@@ -7,6 +7,7 @@ from typing import List, Optional as Opt
 from pony import orm
 
 from . import helpers
+from .api import models
 from .customtypes import ElementSummary, SupportedValue, ValueType
 from .logger import logger
 
@@ -35,6 +36,15 @@ class Edium(database.Entity):
     elements = orm.Set("Element")
     links_out = orm.Set("Link", reverse="start")
     links_in = orm.Set("Link", reverse="end")
+
+    def to_simple_model(self) -> models.EdiumSimpleGetModel:
+        """Return an EdiumSimpleGetModel made with the edium data."""
+        return models.EdiumSimpleGetModel(
+            id=self.id,
+            title=self.title,
+            kind=self.kind,
+            creation_date=self.creation_date,
+        )
 
     def get_element_by_name(self, element_name: str) -> Opt["Element"]:
         """Get an element by its name."""
