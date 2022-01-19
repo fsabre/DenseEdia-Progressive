@@ -8,10 +8,11 @@ from typing import Optional as Opt, Sequence as Seq
 
 import click
 
-from . import exceptions, helpers, operations, tables
-from .constants import DEFAULT_FILE_NAME
-from .customtypes import SupportedValue, ValueType
-from .logger import logger
+from .. import exceptions, helpers
+from ..constants import DEFAULT_FILE_NAME
+from ..customtypes import SupportedValue, ValueType
+from ..logger import logger
+from ..storage import operations, tables
 
 
 def translate_exceptions(func):

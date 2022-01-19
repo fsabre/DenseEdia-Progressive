@@ -5,7 +5,7 @@ from typing import List
 from fastapi import FastAPI
 
 from . import models
-from .. import operations
+from ..storage import operations
 
 app = FastAPI(title="DenseEdia")
 
