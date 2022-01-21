@@ -8,12 +8,13 @@ from typing import Optional as Opt, Sequence as Seq
 
 import click
 
+from . import operations
 from .. import exceptions, helpers
 from ..api.launch import launch_server
 from ..constants import DEFAULT_FILE_NAME
 from ..customtypes import SupportedValue, ValueType
 from ..logger import logger
-from ..storage import operations, tables
+from ..storage import tables
 
 
 def translate_exceptions(func):

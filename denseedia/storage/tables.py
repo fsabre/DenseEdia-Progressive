@@ -6,8 +6,7 @@ from typing import List, Optional as Opt
 
 from pony import orm
 
-from .. import helpers
-from ..api import models
+from .. import helpers, models
 from ..customtypes import ElementSummary, SupportedValue, ValueType
 from ..logger import logger
 
@@ -37,9 +36,9 @@ class Edium(database.Entity):
     links_out = orm.Set("Link", reverse="start")
     links_in = orm.Set("Link", reverse="end")
 
-    def to_simple_model(self) -> models.EdiumSimpleGetModel:
-        """Return an EdiumSimpleGetModel made with the edium data."""
-        return models.EdiumSimpleGetModel(
+    def to_model(self) -> models.EdiumModel:
+        """Return an EdiumModel made with the edium data."""
+        return models.EdiumModel(
             id=self.id,
             title=self.title,
             kind=self.kind,
@@ -116,6 +115,17 @@ class Element(database.Entity):
     todo = orm.Required(bool, default=False)
     versions = orm.Set("Version")
 
+    def to_model(self) -> models.ElementModel:
+        """Return an ElementModel made with the element data."""
+        return models.ElementModel(
+            id=self.id,
+            edium_id=self.edium.id,
+            name=self.name,
+            creation_date=self.creation_date,
+            todo=self.todo,
+            versions=[self.last_version.to_model()],
+        )
+
     def create_version(self, value: SupportedValue) -> "Version":
         """Create a new version with the new value."""
         # Mark all the others versions as "not used"
@@ -141,6 +151,17 @@ class Version(database.Entity):
     json = orm.Required(orm.Json)
     last = orm.Required(bool, default=True)
     creation_date = orm.Required(datetime, default=helpers.now)
+
+    def to_model(self) -> models.VersionModel:
+        """Return an VersionModel made with the version data."""
+        return models.VersionModel(
+            id=self.id,
+            element_id=self.element.id,
+            creation_date=self.creation_date,
+            last=self.last,
+            value_type=self.value_type,
+            value_json=self.get_value(),
+        )
 
     def get_value(self) -> SupportedValue:
         return json_to_value(self.value_type, self.json)
