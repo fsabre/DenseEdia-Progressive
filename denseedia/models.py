@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class VersionModel(BaseModel):
@@ -29,3 +29,8 @@ class EdiumModel(BaseModel):
     title: str
     kind: Optional[str]
     creation_date: datetime
+
+
+class CreateEdiumModel(BaseModel):
+    title: str = Field(min_length=1)
+    kind: Optional[str] = Field(None, min_length=1)

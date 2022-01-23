@@ -18,3 +18,11 @@ def get_one_edium(edium_id: int) -> models.EdiumModel:
         if edium is None:
             raise exceptions.ObjectNotFound("edium", edium_id)
         return edium.to_model()
+
+
+def create_one_edium(body: models.CreateEdiumModel) -> models.EdiumModel:
+    """Create and return one edium."""
+    with orm.db_session:
+        edium = Edium(**body.dict())
+        orm.commit()
+        return edium.to_model()

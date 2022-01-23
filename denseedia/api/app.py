@@ -35,3 +35,15 @@ def get_one_edium(edium_id: int) -> models.EdiumModel:
         return operations.get_one_edium(edium_id)
     except exceptions.ObjectNotFound as err:
         raise HTTPException(status_code=404, detail=err.args[0])
+
+
+@app.post(
+    path="/edium/{edium_id}",
+    operation_id="create_one_edium",
+    summary="Create one edium",
+    response_model=models.EdiumModel,
+    tags=["Edia"],
+)
+def create_one_edium(body: models.CreateEdiumModel) -> models.EdiumModel:
+    """Create one edium."""
+    return operations.create_one_edium(body)
