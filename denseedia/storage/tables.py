@@ -123,7 +123,7 @@ class Element(database.Entity):
             name=self.name,
             creation_date=self.creation_date,
             todo=self.todo,
-            versions=[self.last_version.to_model()],
+            versions=[],
         )
 
     def create_version(self, value: SupportedValue) -> "Version":
@@ -160,7 +160,7 @@ class Version(database.Entity):
             creation_date=self.creation_date,
             last=self.last,
             value_type=self.value_type,
-            value_json=self.get_value(),
+            value_json=self.json,
         )
 
     def get_value(self) -> SupportedValue:

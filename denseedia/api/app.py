@@ -62,3 +62,15 @@ def delete_one_edium(edium_id: int) -> models.EdiumModel:
         return operations.delete_one_edium(edium_id)
     except exceptions.ObjectNotFound as err:
         raise HTTPException(status_code=404, detail=err.args[0])
+
+
+@app.get(
+    path="/edium/{edium_id}/elements",
+    operation_id="get_one_edium_elements",
+    summary="Get one edium elements and their last version",
+    response_model=List[models.ElementModel],
+    tags=["Elements"],
+)
+def get_one_edium_elements(edium_id: int) -> List[models.ElementModel]:
+    """Get one edium elements and their last version."""
+    return operations.get_one_edium_elements(edium_id)

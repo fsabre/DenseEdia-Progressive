@@ -1,7 +1,7 @@
-from typing import List
+from typing import Dict, List
 
 from .. import exceptions, models
-from ..storage.tables import Edium, orm
+from ..storage.tables import Edium, Element, orm
 
 
 def get_all_edia() -> List[models.EdiumModel]:
@@ -37,3 +37,25 @@ def delete_one_edium(edium_id: int) -> models.EdiumModel:
         content = edium.to_model()
         edium.delete()
     return content
+
+
+def get_one_edium_elements(edium_id: int) -> List[models.ElementModel]:
+    """Return the elements of an Edium, with their last version attached.
+
+    It works even if an element has no version.
+    """
+    with orm.db_session:
+        # The first request is used to retrieve the elements
+        elements = orm.select(e for e in Element if e.edium.id == edium_id)
+        if not elements:
+            return []
+        content: Dict[int, models.ElementModel]
+        content = {element.id: element.to_model() for element in elements}
+        # The second is used to retrieve the last version of those elements
+        versions = orm.left_join(
+            v for e in Element for v in e.versions
+                if e.edium.id == edium_id if v.last is True
+        )
+        for version in versions:
+            content[version.element.id].versions = [version.to_model()]
+    return list(content.values())
