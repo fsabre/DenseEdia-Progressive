@@ -47,3 +47,18 @@ def get_one_edium(edium_id: int) -> models.EdiumModel:
 def create_one_edium(body: models.CreateEdiumModel) -> models.EdiumModel:
     """Create one edium."""
     return operations.create_one_edium(body)
+
+
+@app.delete(
+    path="/edium/{edium_id}",
+    operation_id="delete_one_edium",
+    summary="Delete one edium",
+    response_model=models.EdiumModel,
+    tags=["Edia"],
+)
+def delete_one_edium(edium_id: int) -> models.EdiumModel:
+    """Delete one edium."""
+    try:
+        return operations.delete_one_edium(edium_id)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
