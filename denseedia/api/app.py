@@ -104,3 +104,20 @@ def get_one_full_element(element_id: int) -> models.ElementModel:
         return operations.get_one_full_element(element_id)
     except exceptions.ObjectNotFound as err:
         raise HTTPException(status_code=404, detail=err.args[0])
+
+
+@app.post(
+    path="/edium/{edium_id}/element",
+    operation_id="create_one_element",
+    summary="Create one element and its first version",
+    response_model=models.ElementModel,
+    tags=["Elements"],
+)
+def create_one_element(edium_id: int, body: models.CreateElementModel) -> models.ElementModel:
+    """Create one element and its last version."""
+    try:
+        return operations.create_one_element(edium_id, body)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
+    except exceptions.DuplicateElementName as err:
+        raise HTTPException(status_code=409, detail=err.args[0])

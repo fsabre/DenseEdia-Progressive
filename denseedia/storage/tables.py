@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional as Opt
+from typing import Any, List, Optional as Opt
 
 from pony import orm
 
@@ -129,6 +129,18 @@ class Element(database.Entity):
     def get_last_version(self) -> Opt["Version"]:
         """Return the last version of the element."""
         return self.versions.select(lambda v: v.last is True).get()
+
+    def create_version2(self, value_type: models.ValueType, value_json: Any) -> "Version":
+        """Create a new version."""
+        # Mark all the others versions as "not used"
+        query = self.versions.select(lambda v: v.last is True).for_update()
+        for version in query:
+            version.last = False
+        # Add the new version
+        return self.versions.create(
+            value_type=value_type.value,
+            json=value_json,
+        )
 
     def create_version(self, value: SupportedValue) -> "Version":
         """Create a new version with the new value."""

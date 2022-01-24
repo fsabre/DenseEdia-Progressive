@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .. import exceptions, models
 from ..storage.tables import Edium, Element, orm
@@ -83,4 +83,20 @@ def get_one_full_element(element_id: int) -> models.ElementModel:
             raise exceptions.ObjectNotFound("element", element_id)
         content = element.to_model()
         content.versions = [version.to_model() for version in element.versions]
+    return content
+
+
+def create_one_element(edium_id: int, body: models.CreateElementModel) -> models.ElementModel:
+    with orm.db_session:
+        edium: Optional[Edium] = Edium.get(id=edium_id)
+        if edium is None:
+            raise exceptions.ObjectNotFound("edium", edium_id)
+        if edium.get_element_by_name(body.name) is not None:
+            raise exceptions.DuplicateElementName(body.name)
+
+        element = Element(edium=edium, name=body.name)
+        version = element.create_version2(body.value_type, body.value_json)
+        orm.commit()
+        content = element.to_model()
+        content.versions = [version.to_model()]
     return content

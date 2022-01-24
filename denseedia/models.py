@@ -1,9 +1,10 @@
 """Define the models."""
 
+import enum
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Json
 
 
 class VersionModel(BaseModel):
@@ -34,3 +35,18 @@ class EdiumModel(BaseModel):
 class CreateEdiumModel(BaseModel):
     title: str = Field(min_length=1)
     kind: Optional[str] = Field(None, min_length=1)
+
+
+class ValueType(enum.Enum):
+    NONE = 0
+    BOOL = 1
+    INT = 2
+    FLOAT = 3
+    STR = 4
+    DATETIME = 5
+
+
+class CreateElementModel(BaseModel):
+    name: str = Field(min_length=1)
+    value_type: ValueType
+    value_json: Json
