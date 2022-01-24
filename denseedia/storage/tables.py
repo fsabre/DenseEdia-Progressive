@@ -126,6 +126,10 @@ class Element(database.Entity):
             versions=[],
         )
 
+    def get_last_version(self) -> Opt["Version"]:
+        """Return the last version of the element."""
+        return self.versions.select(lambda v: v.last is True).get()
+
     def create_version(self, value: SupportedValue) -> "Version":
         """Create a new version with the new value."""
         # Mark all the others versions as "not used"
