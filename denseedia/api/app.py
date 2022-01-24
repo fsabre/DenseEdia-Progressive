@@ -89,3 +89,18 @@ def get_one_element(element_id: int) -> models.ElementModel:
         return operations.get_one_element(element_id)
     except exceptions.ObjectNotFound as err:
         raise HTTPException(status_code=404, detail=err.args[0])
+
+
+@app.get(
+    path="/element/{element_id}/full",
+    operation_id="get_one_full_element",
+    summary="Get one element and all its versions",
+    response_model=models.ElementModel,
+    tags=["Elements"],
+)
+def get_one_full_element(element_id: int) -> models.ElementModel:
+    """Get one element and all its versions."""
+    try:
+        return operations.get_one_full_element(element_id)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])

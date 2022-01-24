@@ -73,3 +73,14 @@ def get_one_element(element_id: int) -> models.ElementModel:
         if last_version is not None:
             content.versions = [last_version.to_model()]
     return content
+
+
+def get_one_full_element(element_id: int) -> models.ElementModel:
+    """Return on element and all its versions attached."""
+    with orm.db_session:
+        element = Element.get(id=element_id)
+        if element is None:
+            raise exceptions.ObjectNotFound("element", element_id)
+        content = element.to_model()
+        content.versions = [version.to_model() for version in element.versions]
+    return content
