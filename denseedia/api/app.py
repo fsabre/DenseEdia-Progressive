@@ -47,7 +47,7 @@ def get_one_edium(edium_id: int) -> models.EdiumModel:
 
 
 @app.post(
-    path="/edium/{edium_id}",
+    path="/edium",
     operation_id="create_one_edium",
     summary="Create one edium",
     response_model=models.EdiumModel,
