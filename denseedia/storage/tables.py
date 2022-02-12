@@ -130,15 +130,19 @@ class Element(database.Entity):
         """Return the last version of the element."""
         return self.versions.select(lambda v: v.last is True).get()
 
-    def create_version2(self, value_type: models.ValueType, value_json: Any) -> "Version":
+    def create_version2(self, value_type: models.ValueType.asType, value_json: Any) -> "Version":
         """Create a new version."""
         # Mark all the others versions as "not used"
         query = self.versions.select(lambda v: v.last is True).for_update()
         for version in query:
             version.last = False
+        # The database doesn't support "null" in a JSON column.
+        # I'll use an empty string for now...
+        if value_json is None:
+            value_json = ""
         # Add the new version
         return self.versions.create(
-            value_type=value_type.value,
+            value_type=models.ValueType.to_id(value_type),
             json=value_json,
         )
 
@@ -164,7 +168,7 @@ class Version(database.Entity):
     """A record of an element value at a given time."""
     element = orm.Required("Element")
     value_type = orm.Required(int)
-    json = orm.Required(orm.Json)
+    json = orm.Optional(orm.Json)
     last = orm.Required(bool, default=True)
     creation_date = orm.Required(datetime, default=helpers.now)
 
@@ -175,7 +179,7 @@ class Version(database.Entity):
             element_id=self.element.id,
             creation_date=self.creation_date,
             last=self.last,
-            value_type=self.value_type,
+            value_type=models.ValueType.to_alias(self.value_type),
             value_json=self.json,
         )
 

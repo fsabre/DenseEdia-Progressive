@@ -91,16 +91,17 @@ def get_one_element(element_id: int, mode: models.VersionsMode.asType) -> models
     return content
 
 
-def create_one_element(edium_id: int, body: models.CreateElementModel) -> models.ElementModel:
+def create_one_element(edium_id: int, data: models.CreateElementModel) -> models.ElementModel:
+    """Create one element and its last version."""
     with orm.db_session:
         edium: Optional[Edium] = Edium.get(id=edium_id)
         if edium is None:
             raise exceptions.ObjectNotFound("edium", edium_id)
-        if edium.get_element_by_name(body.name) is not None:
-            raise exceptions.DuplicateElementName(body.name)
+        if edium.get_element_by_name(data.name) is not None:
+            raise exceptions.DuplicateElementName(data.name)
 
-        element = Element(edium=edium, name=body.name)
-        version = element.create_version2(body.value_type, body.value_json)
+        element = Element(edium=edium, name=data.name)
+        version = element.create_version2(data.version.value_type, data.version.value_json)
         orm.commit()
         content = element.to_model()
         content.versions = [version.to_model()]
