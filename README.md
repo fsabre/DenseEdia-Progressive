@@ -131,7 +131,7 @@ Then, an interactive docs page is available at http://localhost:59130.
 |   X    |  POST  | `/edium/5/element`                 | Create one element and its last version              |
 |        | PATCH  | `/element/5`                       | Modify one element                                   |
 |        | DELETE | `/element/5`                       | Delete one element                                   |
-|        |  POST  | `/element/5/version`               | Create a new version of an element                   |
+|   X    |  POST  | `/element/5/version`               | Create a new version for an element                  |
 |        | PATCH  | `/element/5/version`               | Modify the last version of an element                |
 |        | DELETE | `/version/5`                       | Delete one version                                   |
 

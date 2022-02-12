@@ -106,3 +106,16 @@ def create_one_element(edium_id: int, data: models.CreateElementModel) -> models
         content = element.to_model()
         content.versions = [version.to_model()]
     return content
+
+
+def create_one_version(element_id: int, data: models.CreateVersionModel) -> models.VersionModel:
+    """Create a new version for an element."""
+    with orm.db_session:
+        element: Optional[Element] = Element.get(id=element_id)
+        if element is None:
+            raise exceptions.ObjectNotFound("element", element_id)
+
+        version = element.create_version2(data.value_type, data.value_json)
+        orm.commit()
+        content = version.to_model()
+    return content

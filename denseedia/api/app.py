@@ -123,3 +123,18 @@ def create_one_element(edium_id: int, body: models.CreateElementModel) -> models
         raise HTTPException(status_code=404, detail=err.args[0])
     except exceptions.DuplicateElementName as err:
         raise HTTPException(status_code=409, detail=err.args[0])
+
+
+@app.post(
+    path="/element/{element_id}/version",
+    operation_id="create_one_version",
+    summary="Create a new version for an element",
+    response_model=models.VersionModel,
+    tags=["Elements"],
+)
+def create_one_version(element_id: int, body: models.CreateVersionModel) -> models.VersionModel:
+    """Create a new version for an element."""
+    try:
+        return operations.create_one_version(element_id, body)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
