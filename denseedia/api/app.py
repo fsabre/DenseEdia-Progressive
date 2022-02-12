@@ -2,7 +2,7 @@
 
 from typing import List
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import operations
@@ -88,29 +88,17 @@ def get_one_edium_elements(edium_id: int) -> List[models.ElementModel]:
 @app.get(
     path="/element/{element_id}",
     operation_id="get_one_element",
-    summary="Get one element and its last version",
+    summary="Get one element and none, one or all of its versions",
     response_model=models.ElementModel,
     tags=["Elements"],
 )
-def get_one_element(element_id: int) -> models.ElementModel:
-    """Get one element and its last version."""
+def get_one_element(
+    element_id: int,
+    versions: models.VersionsMode.asType = Query(models.VersionsMode.NONE),
+) -> models.ElementModel:
+    """Get one element and none, one or all of its versions."""
     try:
-        return operations.get_one_element(element_id)
-    except exceptions.ObjectNotFound as err:
-        raise HTTPException(status_code=404, detail=err.args[0])
-
-
-@app.get(
-    path="/element/{element_id}/full",
-    operation_id="get_one_full_element",
-    summary="Get one element and all its versions",
-    response_model=models.ElementModel,
-    tags=["Elements"],
-)
-def get_one_full_element(element_id: int) -> models.ElementModel:
-    """Get one element and all its versions."""
-    try:
-        return operations.get_one_full_element(element_id)
+        return operations.get_one_element(element_id, mode=versions)
     except exceptions.ObjectNotFound as err:
         raise HTTPException(status_code=404, detail=err.args[0])
 

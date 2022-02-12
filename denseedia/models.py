@@ -2,7 +2,7 @@
 
 import enum
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field, Json
 
@@ -44,6 +44,13 @@ class ValueType(enum.Enum):
     FLOAT = 3
     STR = 4
     DATETIME = 5
+
+
+class VersionsMode:
+    NONE = "none"
+    SINGLE = "single"
+    ALL = "all"
+    asType = Literal["none", "single", "all"]
 
 
 class CreateElementModel(BaseModel):

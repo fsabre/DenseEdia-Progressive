@@ -61,28 +61,26 @@ def get_one_edium_elements(edium_id: int) -> List[models.ElementModel]:
     return list(content.values())
 
 
-def get_one_element(element_id: int) -> models.ElementModel:
-    """Return one element and its last version attached."""
+def get_one_element(element_id: int, mode: models.VersionsMode.asType) -> models.ElementModel:
+    """Return one element.
+
+    None, one or all of its versions are attached, according to the ``mode``.
+    """
     with orm.db_session:
         element = Element.get(id=element_id)
         if element is None:
             raise exceptions.ObjectNotFound("element", element_id)
         content = element.to_model()
-        # Fill the last version if it exists
-        last_version = element.get_last_version()
-        if last_version is not None:
-            content.versions = [last_version.to_model()]
-    return content
 
+        if mode == models.VersionsMode.SINGLE:
+            # Add the last version if it exists
+            last_version = element.get_last_version()
+            if last_version is not None:
+                content.versions = [last_version.to_model()]
+        elif mode == models.VersionsMode.ALL:
+            # Add all its versions
+            content.versions = [version.to_model() for version in element.versions]
 
-def get_one_full_element(element_id: int) -> models.ElementModel:
-    """Return on element and all its versions attached."""
-    with orm.db_session:
-        element = Element.get(id=element_id)
-        if element is None:
-            raise exceptions.ObjectNotFound("element", element_id)
-        content = element.to_model()
-        content.versions = [version.to_model() for version in element.versions]
     return content
 
 

@@ -120,17 +120,20 @@ Then, an interactive docs page is available at http://localhost:59130.
 
 ##### Elements and version :
 
-| Status | Method | URL                  | Function                                      |
-|:------:|:------:|----------------------|-----------------------------------------------|
-|   X    |  GET   | `/edium/5/element`   | Get one edium elements and their last version |
-|   X    |  GET   | `/element/5`         | Get one element and its last version          |
-|   X    |  GET   | `/element/5/full`    | Get one element and all its versions          |
-|   X    |  POST  | `/edium/5/element`   | Create one element and its last version       |
-|        | PATCH  | `/element/5`         | Modify one element                            |
-|        | DELETE | `/element/5`         | Delete one element                            |
-|        |  POST  | `/element/5/version` | Create a new version of an element            |
-|        | PATCH  | `/element/5/version` | Modify the last version of an element         |
-|        | DELETE | `/version/5`         | Delete one version                            |
+| Status | Method | URL                                | Function                                      |
+|:------:|:------:|------------------------------------|-----------------------------------------------|
+|        |  GET   | `/edium/5/element?versions=none`   | Get one edium elements                        |
+|   X    |  GET   | `/edium/5/element?versions=single` | Get one edium elements and their last version |
+|        |  GET   | `/edium/5/element?versions=all`    | Get one edium elements and all their versions |
+|   X    |  GET   | `/element/5?versions=none`         | Get one element                               |
+|   X    |  GET   | `/element/5?versions=single`       | Get one element and its last version          |
+|   X    |  GET   | `/element/5?versions=all`          | Get one element and all its versions          |
+|   X    |  POST  | `/edium/5/element`                 | Create one element and its last version       |
+|        | PATCH  | `/element/5`                       | Modify one element                            |
+|        | DELETE | `/element/5`                       | Delete one element                            |
+|        |  POST  | `/element/5/version`               | Create a new version of an element            |
+|        | PATCH  | `/element/5/version`               | Modify the last version of an element         |
+|        | DELETE | `/version/5`                       | Delete one version                            |
 
 ##### Links :
 
