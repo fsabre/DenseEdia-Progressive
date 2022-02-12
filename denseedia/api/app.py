@@ -75,14 +75,19 @@ def delete_one_edium(edium_id: int) -> models.EdiumModel:
 
 @app.get(
     path="/edium/{edium_id}/elements",
-    operation_id="get_one_edium_elements",
-    summary="Get one edium elements and their last version",
+    operation_id="get_elements_of_one_edium",
+    summary="Get the elements of one edium and their versions",
     response_model=List[models.ElementModel],
     tags=["Elements"],
 )
-def get_one_edium_elements(edium_id: int) -> List[models.ElementModel]:
-    """Get one edium elements and their last version."""
-    return operations.get_one_edium_elements(edium_id)
+def get_elements_of_one_edium(
+    edium_id: int,
+    versions: models.VersionsMode.asType = Query(models.VersionsMode.NONE),
+) -> List[models.ElementModel]:
+    """Get the elements of one edium and their versions."""
+    if versions == models.VersionsMode.ALL:
+        raise HTTPException(status_code=501, detail="Retrieval of all versions is not implemented yet")
+    return operations.get_elements_of_one_edium(edium_id, mode=versions)
 
 
 @app.get(

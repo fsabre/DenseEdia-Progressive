@@ -39,9 +39,10 @@ def delete_one_edium(edium_id: int) -> models.EdiumModel:
     return content
 
 
-def get_one_edium_elements(edium_id: int) -> List[models.ElementModel]:
-    """Return the elements of an Edium, with their last version attached.
+def get_elements_of_one_edium(edium_id: int, mode: models.VersionsMode.asType) -> List[models.ElementModel]:
+    """Return the elements of an Edium.
 
+    None, one or all of its versions are attached, according to the ``mode``.
     It works even if an element has no version.
     """
     with orm.db_session:
@@ -51,13 +52,19 @@ def get_one_edium_elements(edium_id: int) -> List[models.ElementModel]:
             return []
         content: Dict[int, models.ElementModel]
         content = {element.id: element.to_model() for element in elements}
-        # The second is used to retrieve the last version of those elements
-        versions = orm.left_join(
-            v for e in Element for v in e.versions
-                if e.edium.id == edium_id if v.last is True
-        )
-        for version in versions:
-            content[version.element.id].versions = [version.to_model()]
+
+        # Attach the last version of each element if needed by the mode
+        if mode == models.VersionsMode.SINGLE:
+            # A second request is used to retrieve the last version of those elements
+            versions = orm.left_join(
+                v
+                    for e in Element
+                    for v in e.versions
+                    if e.edium.id == edium_id if v.last is True
+            )
+            for version in versions:
+                content[version.element.id].versions = [version.to_model()]
+
     return list(content.values())
 
 
