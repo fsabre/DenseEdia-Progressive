@@ -34,7 +34,7 @@ class EdiumModel(BaseModel):
 
 class CreateEdiumModel(BaseModel):
     title: str = Field(min_length=1)
-    kind: Optional[str] = Field(None, min_length=1)
+    kind: str = Field("")
 
 
 class ValueType(enum.Enum):

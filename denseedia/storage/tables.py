@@ -29,8 +29,8 @@ def json_to_value(value_type: ValueType, json) -> SupportedValue:
 
 class Edium(database.Entity):
     """The main piece of information stored in DenseEdia."""
-    title = orm.Required(str)
-    kind = orm.Optional(str)
+    title = orm.Required(str)  # Non empty string
+    kind = orm.Optional(str)  # String (may be empty)
     creation_date = orm.Required(datetime, default=helpers.now)
     elements = orm.Set("Element")
     links_out = orm.Set("Link", reverse="start")
