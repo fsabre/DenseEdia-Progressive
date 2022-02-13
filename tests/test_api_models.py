@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from denseedia.models import CreateEdiumModel, ModifyEdiumModel
+from denseedia.models import CreateEdiumModel, ModifyEdiumModel, ModifyElementModel
 
 
 def test_CreateEdiumModel():
@@ -58,3 +58,21 @@ def test_ModifyEdiumModel():
     # Invalid data with None kind
     with pytest.raises(ValidationError):
         ModifyEdiumModel(kind=None)
+
+
+def test_ModifyElementModel():
+    # Valid data with name filled
+    model = ModifyElementModel(name="Name")
+    assert model.dict(exclude_unset=True) == {"name": "Name"}
+
+    # Valid data with missing name
+    model = ModifyElementModel()
+    assert model.dict(exclude_unset=True) == {}
+
+    # Invalid data with empty name
+    with pytest.raises(ValidationError):
+        ModifyElementModel(name="")
+
+    # Invalid data with None name
+    with pytest.raises(ValidationError):
+        ModifyElementModel(name=None)

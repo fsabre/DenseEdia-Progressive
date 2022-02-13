@@ -115,3 +115,7 @@ class CreateVersionModel(BaseModel):
 class CreateElementModel(BaseModel):
     name: str = Field(min_length=1)
     version: CreateVersionModel
+
+
+class ModifyElementModel(BaseModel):
+    name: str = Field(default_factory=lambda: None, min_length=1)

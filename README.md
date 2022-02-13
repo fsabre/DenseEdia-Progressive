@@ -129,7 +129,7 @@ Then, an interactive docs page is available at http://localhost:59130.
 |   X    |  GET   | `/element/5?versions=single`       | Get one element and its last version                 |
 |   X    |  GET   | `/element/5?versions=all`          | Get one element and all its versions                 |
 |   X    |  POST  | `/edium/5/element`                 | Create one element and its last version              |
-|        | PATCH  | `/element/5`                       | Modify one element                                   |
+|   X    | PATCH  | `/element/5`                       | Modify one element                                   |
 |   X    | DELETE | `/element/5`                       | Delete one element                                   |
 |   X    |  POST  | `/element/5/version`               | Create a new version for an element                  |
 |        | PATCH  | `/element/5/version`               | Modify the last version of an element                |

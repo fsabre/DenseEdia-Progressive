@@ -140,6 +140,21 @@ def create_one_element(edium_id: int, body: models.CreateElementModel) -> models
         raise HTTPException(status_code=409, detail=err.args[0])
 
 
+@app.patch(
+    path="/element/{element_id}",
+    operation_id="modify_one_element",
+    summary="Modify one element",
+    response_model=models.ElementModel,
+    tags=["Elements"],
+)
+def modify_one_element(element_id: int, body: models.ModifyElementModel) -> models.ElementModel:
+    """Modify one edium."""
+    try:
+        return operations.modify_one_element(element_id, body)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
+
+
 @app.delete(
     path="/element/{element_id}",
     operation_id="delete_one_element",
