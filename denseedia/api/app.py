@@ -168,3 +168,18 @@ def create_one_version(element_id: int, body: models.CreateVersionModel) -> mode
         return operations.create_one_version(element_id, body)
     except exceptions.ObjectNotFound as err:
         raise HTTPException(status_code=404, detail=err.args[0])
+
+
+@app.delete(
+    path="/version/{version_id}",
+    operation_id="delete_one_version",
+    summary="Delete one version",
+    response_model=models.VersionModel,
+    tags=["Elements"],
+)
+def delete_one_version(version_id: int) -> models.VersionModel:
+    """Delete one version."""
+    try:
+        return operations.delete_one_version(version_id)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])

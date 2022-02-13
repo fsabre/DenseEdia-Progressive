@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional
 
 from .. import exceptions, models
-from ..storage.tables import Edium, Element, orm
+from ..storage.tables import Edium, Element, orm, Version
 
 
 def get_all_edia() -> List[models.EdiumModel]:
@@ -142,4 +142,15 @@ def create_one_version(element_id: int, data: models.CreateVersionModel) -> mode
         version = element.create_version2(data.value_type, data.value_json)
         orm.commit()
         content = version.to_model()
+    return content
+
+
+def delete_one_version(version_id: int) -> models.VersionModel:
+    """Delete a version and return its model."""
+    with orm.db_session:
+        version = Version.get(id=version_id)
+        if version is None:
+            raise exceptions.ObjectNotFound("version", version_id)
+        content = version.to_model()
+        version.delete()
     return content
