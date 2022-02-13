@@ -28,6 +28,19 @@ def create_one_edium(body: models.CreateEdiumModel) -> models.EdiumModel:
         return edium.to_model()
 
 
+def modify_one_edium(edium_id: int, data: models.ModifyEdiumModel) -> models.EdiumModel:
+    """Modify an edium and return its model."""
+    with orm.db_session:
+        edium = Edium.get(id=edium_id)
+        if edium is None:
+            raise exceptions.ObjectNotFound("edium", edium_id)
+        for (key, val) in data.dict(exclude_unset=True).items():
+            setattr(edium, key, val)
+        orm.commit()
+        content = edium.to_model()
+    return content
+
+
 def delete_one_edium(edium_id: int) -> models.EdiumModel:
     """Delete an edium and return its model."""
     with orm.db_session:

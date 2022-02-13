@@ -36,6 +36,11 @@ class CreateEdiumModel(BaseModel):
     kind: str = Field("")
 
 
+class ModifyEdiumModel(BaseModel):
+    title: str = Field(default_factory=lambda: None, min_length=1)
+    kind: str = Field(default_factory=lambda: None)
+
+
 class VersionsMode:
     NONE = "none"
     SINGLE = "single"

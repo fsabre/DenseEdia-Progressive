@@ -115,7 +115,7 @@ Then, an interactive docs page is available at http://localhost:59130.
 |   X    |  GET   | `/edium`   | Get the list of all edia |
 |   X    |  GET   | `/edium/5` | Get one edium            |
 |   X    |  POST  | `/edium`   | Create one edium         |
-|        | PATCH  | `/edium/5` | Modify one edium         |
+|   X    | PATCH  | `/edium/5` | Modify one edium         |
 |   X    | DELETE | `/edium/5` | Delete one edium         |
 
 ##### Elements and version :

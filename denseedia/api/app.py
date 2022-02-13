@@ -58,6 +58,21 @@ def create_one_edium(body: models.CreateEdiumModel) -> models.EdiumModel:
     return operations.create_one_edium(body)
 
 
+@app.patch(
+    path="/edium/{edium_id}",
+    operation_id="modify_one_edium",
+    summary="Modify one edium",
+    response_model=models.EdiumModel,
+    tags=["Edia"],
+)
+def modify_one_edium(edium_id: int, body: models.ModifyEdiumModel) -> models.EdiumModel:
+    """Modify one edium."""
+    try:
+        return operations.modify_one_edium(edium_id, body)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
+
+
 @app.delete(
     path="/edium/{edium_id}",
     operation_id="delete_one_edium",
