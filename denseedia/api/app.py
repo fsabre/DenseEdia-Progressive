@@ -140,6 +140,21 @@ def create_one_element(edium_id: int, body: models.CreateElementModel) -> models
         raise HTTPException(status_code=409, detail=err.args[0])
 
 
+@app.delete(
+    path="/element/{element_id}",
+    operation_id="delete_one_element",
+    summary="Delete one element",
+    response_model=models.ElementModel,
+    tags=["Elements"],
+)
+def delete_one_element(element_id: int) -> models.ElementModel:
+    """Delete one element."""
+    try:
+        return operations.delete_one_element(element_id)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
+
+
 @app.post(
     path="/element/{element_id}/version",
     operation_id="create_one_version",

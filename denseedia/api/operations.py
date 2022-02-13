@@ -121,6 +121,17 @@ def create_one_element(edium_id: int, data: models.CreateElementModel) -> models
     return content
 
 
+def delete_one_element(element_id: int) -> models.ElementModel:
+    """Delete an element and return its model."""
+    with orm.db_session:
+        element = Element.get(id=element_id)
+        if element is None:
+            raise exceptions.ObjectNotFound("element", element_id)
+        content = element.to_model()
+        element.delete()
+    return content
+
+
 def create_one_version(element_id: int, data: models.CreateVersionModel) -> models.VersionModel:
     """Create a new version for an element."""
     with orm.db_session:
