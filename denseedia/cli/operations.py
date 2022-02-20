@@ -2,10 +2,10 @@
 
 from typing import List, Optional as Opt, Tuple
 
-from . import exceptions
-from .customtypes import ElementSummary, SupportedValue, ValueType
-from .logger import logger
-from .tables import Edium, Element, Link, orm, Version
+from .. import exceptions
+from ..customtypes import ElementSummary, SupportedValue, ValueType
+from ..logger import logger
+from ..storage.tables import Edium, Element, Link, orm, Version
 
 
 def _compare_element_types(

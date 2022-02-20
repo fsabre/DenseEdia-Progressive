@@ -43,7 +43,9 @@ history of an element value over time.
 
 ## Usage
 
-### Display the help
+### Command line
+
+#### Display the help
 
 ```bash
 cd DenseEdia-Progressive/  # Move into the folder
@@ -56,7 +58,7 @@ python -m denseedia edium --help  # Read the documentation of the "edium" group
 
 You can find in the help some commands that are not presented in this README.
 
-### Add Edia
+#### Add Edia
 
 ```bash
 python -m denseedia add-edium "DenseEdia installation" -k event  # Add an event
@@ -65,20 +67,20 @@ python -m denseedia add-edium --url https://www.youtube.com/watch?v=q0pqJRUTQpY 
 python -m denseedia add-edium "Perdu.com" --url https://www.perdu.com -k website -c "I love this website."  # Add a website with a comment
 ```
 
-### Display Edia
+#### Display Edia
 
 ```bash
 python -m denseedia list  # Show a list of all Edia
 python -m denseedia edium 2 show  # Show the details (elements and links) of the Edium n°2
 ```
 
-### Draw links
+#### Draw links
 
 ```bash
 python -m denseedia add-link 3 2 --label origin  # Draw a link from the 3rd Edium to the 2nd with label "origin"
 ```
 
-### Set elements
+#### Set elements
 
 The element names are at your liking.
 
@@ -91,6 +93,58 @@ python -m denseedia edium 1 set rating --type float --allow-type-change 9.5  # S
 In this last case, as a safety measure, DenseEdia won't allow you to change the
 value from an integer (10) to a float value (9.5), unless the
 `-y/--allow-type-change` flag is given.
+
+### HTTP API
+
+#### Run
+
+Run the API server with :
+
+```bash
+python -m denseedia start-server
+```
+
+Then, an interactive docs page is available at http://localhost:59130.
+
+#### List of the endpoints
+
+##### Edia
+
+| Status | Method | URL        | Summary                  |
+|:------:|:------:|------------|--------------------------|
+|   X    |  GET   | `/edium`   | Get the list of all edia |
+|   X    |  GET   | `/edium/5` | Get one edium            |
+|   X    |  POST  | `/edium`   | Create one edium         |
+|   X    | PATCH  | `/edium/5` | Modify one edium         |
+|   X    | DELETE | `/edium/5` | Delete one edium         |
+
+##### Elements and version :
+
+| Status | Method | URL                                | Function                                             |
+|:------:|:------:|------------------------------------|------------------------------------------------------|
+|   X    |  GET   | `/edium/5/element?versions=none`   | Get the elements of one edium                        |
+|   X    |  GET   | `/edium/5/element?versions=single` | Get the elements of one edium and their last version |
+|        |  GET   | `/edium/5/element?versions=all`    | Get the elements of one edium and all their versions |
+|   X    |  GET   | `/element/5?versions=none`         | Get one element                                      |
+|   X    |  GET   | `/element/5?versions=single`       | Get one element and its last version                 |
+|   X    |  GET   | `/element/5?versions=all`          | Get one element and all its versions                 |
+|   X    |  POST  | `/edium/5/element`                 | Create one element and its last version              |
+|   X    | PATCH  | `/element/5`                       | Modify one element                                   |
+|   X    | DELETE | `/element/5`                       | Delete one element                                   |
+|   X    |  POST  | `/element/5/version`               | Create a new version for an element                  |
+|        | PATCH  | `/element/5/version`               | Modify the last version of an element                |
+|   X    | DELETE | `/version/5`                       | Delete one version                                   |
+
+##### Links :
+
+| Status | Method | URL              | Function                               |
+|:------:|:------:|------------------|----------------------------------------|
+|        |  GET   | `/link`          | Get the list of all links              |
+|        |  GET   | `/link/5`        | Get one link                           |
+|        |  GET   | `/edium/5/links` | Get all links that have an edium in it |
+|        |  POST  | `/link`          | Create one link                        |
+|        | PATCH  | `/link/5`        | Modify one link                        |
+|        | DELETE | `/link/5`        | Delete one link                        |
 
 ## The next step
 

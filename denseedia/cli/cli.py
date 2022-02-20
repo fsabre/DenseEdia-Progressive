@@ -8,10 +8,13 @@ from typing import Optional as Opt, Sequence as Seq
 
 import click
 
-from . import exceptions, helpers, operations, tables
-from .constants import DEFAULT_FILE_NAME
-from .customtypes import SupportedValue, ValueType
-from .logger import logger
+from . import operations
+from .. import exceptions, helpers
+from ..api.launch import launch_server
+from ..constants import DEFAULT_FILE_NAME
+from ..customtypes import SupportedValue, ValueType
+from ..logger import logger
+from ..storage import tables
 
 
 def translate_exceptions(func):
@@ -48,6 +51,11 @@ def main_group(file: Opt[str], verbose: int) -> None:
     file_name: str = file or DEFAULT_FILE_NAME
     file_path = Path().joinpath(file_name).absolute().resolve()
     tables.use_database(file_path)
+
+
+@main_group.command(name="start-server", help="Start the API server")
+def start_server():
+    launch_server()
 
 
 @main_group.command(name="add-edium", help="Create a new Edium")

@@ -1,3 +1,5 @@
-from .cli import main_group
+"""DenseEdia module endpoint"""
+
+from .cli.cli import main_group
 
 main_group()

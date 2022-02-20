@@ -1,0 +1,169 @@
+from typing import Dict, List, Optional
+
+from .. import exceptions, models
+from ..storage.tables import Edium, Element, orm, Version
+
+
+def get_all_edia() -> List[models.EdiumModel]:
+    """Return a list of all edia as simple models."""
+    with orm.db_session:
+        edia = Edium.select()[:]
+        return [edium.to_model() for edium in edia]
+
+
+def get_one_edium(edium_id: int) -> models.EdiumModel:
+    """Return an edium as a model."""
+    with orm.db_session:
+        edium = Edium.get(id=edium_id)
+        if edium is None:
+            raise exceptions.ObjectNotFound("edium", edium_id)
+        return edium.to_model()
+
+
+def create_one_edium(body: models.CreateEdiumModel) -> models.EdiumModel:
+    """Create and return one edium."""
+    with orm.db_session:
+        edium = Edium(**body.dict())
+        orm.commit()
+        return edium.to_model()
+
+
+def modify_one_edium(edium_id: int, data: models.ModifyEdiumModel) -> models.EdiumModel:
+    """Modify an edium and return its model."""
+    with orm.db_session:
+        edium = Edium.get(id=edium_id)
+        if edium is None:
+            raise exceptions.ObjectNotFound("edium", edium_id)
+        for (key, val) in data.dict(exclude_unset=True).items():
+            setattr(edium, key, val)
+        orm.commit()
+        content = edium.to_model()
+    return content
+
+
+def delete_one_edium(edium_id: int) -> models.EdiumModel:
+    """Delete an edium and return its model."""
+    with orm.db_session:
+        edium = Edium.get(id=edium_id)
+        if edium is None:
+            raise exceptions.ObjectNotFound("edium", edium_id)
+        content = edium.to_model()
+        edium.delete()
+    return content
+
+
+def get_elements_of_one_edium(edium_id: int, mode: models.VersionsMode.asType) -> List[models.ElementModel]:
+    """Return the elements of an Edium.
+
+    None, one or all of its versions are attached, according to the ``mode``.
+    It works even if an element has no version.
+    """
+    with orm.db_session:
+        # The first request is used to retrieve the elements
+        elements = orm.select(e for e in Element if e.edium.id == edium_id)
+        if not elements:
+            return []
+        content: Dict[int, models.ElementModel]
+        content = {element.id: element.to_model() for element in elements}
+
+        # Attach the last version of each element if needed by the mode
+        if mode == models.VersionsMode.SINGLE:
+            # A second request is used to retrieve the last version of those elements
+            versions = orm.left_join(
+                v
+                    for e in Element
+                    for v in e.versions
+                    if e.edium.id == edium_id if v.last is True
+            )
+            for version in versions:
+                content[version.element.id].versions = [version.to_model()]
+
+    return list(content.values())
+
+
+def get_one_element(element_id: int, mode: models.VersionsMode.asType) -> models.ElementModel:
+    """Return one element.
+
+    None, one or all of its versions are attached, according to the ``mode``.
+    """
+    with orm.db_session:
+        element = Element.get(id=element_id)
+        if element is None:
+            raise exceptions.ObjectNotFound("element", element_id)
+        content = element.to_model()
+
+        if mode == models.VersionsMode.SINGLE:
+            # Add the last version if it exists
+            last_version = element.get_last_version()
+            if last_version is not None:
+                content.versions = [last_version.to_model()]
+        elif mode == models.VersionsMode.ALL:
+            # Add all its versions
+            content.versions = [version.to_model() for version in element.versions]
+
+    return content
+
+
+def create_one_element(edium_id: int, data: models.CreateElementModel) -> models.ElementModel:
+    """Create one element and its last version."""
+    with orm.db_session:
+        edium: Optional[Edium] = Edium.get(id=edium_id)
+        if edium is None:
+            raise exceptions.ObjectNotFound("edium", edium_id)
+        if edium.get_element_by_name(data.name) is not None:
+            raise exceptions.DuplicateElementName(data.name)
+
+        element = Element(edium=edium, name=data.name)
+        version = element.create_version2(data.version.value_type, data.version.value_json)
+        orm.commit()
+        content = element.to_model()
+        content.versions = [version.to_model()]
+    return content
+
+
+def modify_one_element(element_id: int, data: models.ModifyElementModel) -> models.ElementModel:
+    """Modify an element and return its model."""
+    with orm.db_session:
+        element = Element.get(id=element_id)
+        if element is None:
+            raise exceptions.ObjectNotFound("element", element_id)
+        for (key, val) in data.dict(exclude_unset=True).items():
+            setattr(element, key, val)
+        orm.commit()
+        content = element.to_model()
+    return content
+
+
+def delete_one_element(element_id: int) -> models.ElementModel:
+    """Delete an element and return its model."""
+    with orm.db_session:
+        element = Element.get(id=element_id)
+        if element is None:
+            raise exceptions.ObjectNotFound("element", element_id)
+        content = element.to_model()
+        element.delete()
+    return content
+
+
+def create_one_version(element_id: int, data: models.CreateVersionModel) -> models.VersionModel:
+    """Create a new version for an element."""
+    with orm.db_session:
+        element: Optional[Element] = Element.get(id=element_id)
+        if element is None:
+            raise exceptions.ObjectNotFound("element", element_id)
+
+        version = element.create_version2(data.value_type, data.value_json)
+        orm.commit()
+        content = version.to_model()
+    return content
+
+
+def delete_one_version(version_id: int) -> models.VersionModel:
+    """Delete a version and return its model."""
+    with orm.db_session:
+        version = Version.get(id=version_id)
+        if version is None:
+            raise exceptions.ObjectNotFound("version", version_id)
+        content = version.to_model()
+        version.delete()
+    return content

@@ -2,13 +2,13 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional as Opt
+from typing import Any, List, Optional as Opt
 
 from pony import orm
 
-from . import helpers
-from .customtypes import ElementSummary, SupportedValue, ValueType
-from .logger import logger
+from .. import helpers, models
+from ..customtypes import ElementSummary, SupportedValue, ValueType
+from ..logger import logger
 
 database = orm.Database()
 
@@ -29,12 +29,21 @@ def json_to_value(value_type: ValueType, json) -> SupportedValue:
 
 class Edium(database.Entity):
     """The main piece of information stored in DenseEdia."""
-    title = orm.Required(str)
-    kind = orm.Optional(str)
+    title = orm.Required(str)  # Non empty string
+    kind = orm.Optional(str)  # String (may be empty)
     creation_date = orm.Required(datetime, default=helpers.now)
     elements = orm.Set("Element")
     links_out = orm.Set("Link", reverse="start")
     links_in = orm.Set("Link", reverse="end")
+
+    def to_model(self) -> models.EdiumModel:
+        """Return an EdiumModel made with the edium data."""
+        return models.EdiumModel(
+            id=self.id,
+            title=self.title,
+            kind=self.kind,
+            creation_date=self.creation_date,
+        )
 
     def get_element_by_name(self, element_name: str) -> Opt["Element"]:
         """Get an element by its name."""
@@ -106,6 +115,37 @@ class Element(database.Entity):
     todo = orm.Required(bool, default=False)
     versions = orm.Set("Version")
 
+    def to_model(self) -> models.ElementModel:
+        """Return an ElementModel made with the element data."""
+        return models.ElementModel(
+            id=self.id,
+            edium_id=self.edium.id,
+            name=self.name,
+            creation_date=self.creation_date,
+            todo=self.todo,
+            versions=[],
+        )
+
+    def get_last_version(self) -> Opt["Version"]:
+        """Return the last version of the element."""
+        return self.versions.select(lambda v: v.last is True).get()
+
+    def create_version2(self, value_type: models.ValueType.asType, value_json: Any) -> "Version":
+        """Create a new version."""
+        # Mark all the others versions as "not used"
+        query = self.versions.select(lambda v: v.last is True).for_update()
+        for version in query:
+            version.last = False
+        # The database doesn't support "null" in a JSON column.
+        # I'll use an empty string for now...
+        if value_json is None:
+            value_json = ""
+        # Add the new version
+        return self.versions.create(
+            value_type=models.ValueType.to_id(value_type),
+            json=value_json,
+        )
+
     def create_version(self, value: SupportedValue) -> "Version":
         """Create a new version with the new value."""
         # Mark all the others versions as "not used"
@@ -128,9 +168,20 @@ class Version(database.Entity):
     """A record of an element value at a given time."""
     element = orm.Required("Element")
     value_type = orm.Required(int)
-    json = orm.Required(orm.Json)
+    json = orm.Optional(orm.Json)
     last = orm.Required(bool, default=True)
     creation_date = orm.Required(datetime, default=helpers.now)
+
+    def to_model(self) -> models.VersionModel:
+        """Return an VersionModel made with the version data."""
+        return models.VersionModel(
+            id=self.id,
+            element_id=self.element.id,
+            creation_date=self.creation_date,
+            last=self.last,
+            value_type=models.ValueType.to_alias(self.value_type),
+            value_json=self.json,
+        )
 
     def get_value(self) -> SupportedValue:
         return json_to_value(self.value_type, self.json)

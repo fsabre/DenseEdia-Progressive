@@ -15,6 +15,13 @@ class ObjectNotFound(DenseEdiaException):
         self.selector = selector
 
 
+class DuplicateElementName(DenseEdiaException):
+    def __init__(self, element_name: str):
+        msg = f"An element '{element_name}' already exist"
+        super().__init__(msg)
+        self.element_name = element_name
+
+
 class ValueTypeChange(DenseEdiaException):
     def __init__(self, old_type_name: str, new_type_name: str):
         msg = (
