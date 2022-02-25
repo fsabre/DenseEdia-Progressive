@@ -198,3 +198,87 @@ def delete_one_version(version_id: int) -> models.VersionModel:
         return operations.delete_one_version(version_id)
     except exceptions.ObjectNotFound as err:
         raise HTTPException(status_code=404, detail=err.args[0])
+
+
+@app.get(
+    path="/link",
+    operation_id="get_all_links",
+    summary="Get the list of all links",
+    response_model=List[models.LinkModel],
+    tags=["Links"],
+)
+def get_all_links() -> List[models.LinkModel]:
+    """Get the list of all links."""
+    return operations.get_all_links()
+
+
+@app.get(
+    path="/link/{link_id}",
+    operation_id="get_one_link",
+    summary="Get one link",
+    response_model=models.LinkModel,
+    tags=["Links"],
+)
+def get_one_link(link_id: int) -> models.LinkModel:
+    """Get one link."""
+    try:
+        return operations.get_one_link(link_id)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
+
+
+@app.get(
+    path="/edium/{edium_id}/links",
+    operation_id="get_links_of_one_edium",
+    summary="Get the links in which one edium appears",
+    response_model=List[models.LinkModel],
+    tags=["Links"],
+)
+def get_links_of_one_edium(edium_id: int) -> List[models.LinkModel]:
+    """Get the links in which one edium appears."""
+    return operations.get_links_of_one_edium(edium_id)
+
+
+@app.post(
+    path="/link",
+    operation_id="create_one_link",
+    summary="Create one link",
+    response_model=models.LinkModel,
+    tags=["Links"],
+)
+def create_one_link(body: models.CreateLinkModel) -> models.LinkModel:
+    """Create one link."""
+    try:
+        return operations.create_one_link(body)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
+
+
+@app.patch(
+    path="/link/{link_id}",
+    operation_id="modify_one_link",
+    summary="Modify one link",
+    response_model=models.LinkModel,
+    tags=["Links"],
+)
+def modify_one_link(link_id: int, body: models.ModifyLinkModel) -> models.LinkModel:
+    """Modify one link."""
+    try:
+        return operations.modify_one_link(link_id, body)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
+
+
+@app.delete(
+    path="/link/{link_id}",
+    operation_id="delete_one_link",
+    summary="Delete one link",
+    response_model=models.LinkModel,
+    tags=["Links"],
+)
+def delete_one_link(link_id: int) -> models.LinkModel:
+    """Delete one link."""
+    try:
+        return operations.delete_one_link(link_id)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
