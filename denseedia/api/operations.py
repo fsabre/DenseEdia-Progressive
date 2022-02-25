@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional
 
 from .. import exceptions, models
-from ..storage.tables import Edium, Element, orm, Version
+from ..storage.tables import Edium, Element, Link, orm, Version
 
 
 def get_all_edia() -> List[models.EdiumModel]:
@@ -166,4 +166,77 @@ def delete_one_version(version_id: int) -> models.VersionModel:
             raise exceptions.ObjectNotFound("version", version_id)
         content = version.to_model()
         version.delete()
+    return content
+
+
+def get_all_links() -> List[models.LinkModel]:
+    """Return a list of all links as models."""
+    with orm.db_session:
+        links = Link.select()[:]
+        return [link.to_model() for link in links]
+
+
+def get_one_link(link_id: int) -> models.LinkModel:
+    """Return a link as a model."""
+    with orm.db_session:
+        link = Link.get(id=link_id)
+        if link is None:
+            raise exceptions.ObjectNotFound("link", link_id)
+        return link.to_model()
+
+
+def get_links_of_one_edium(edium_id: int) -> List[models.LinkModel]:
+    """Return the links in which an edium appears."""
+    with orm.db_session:
+        links: List[Link] = orm.select(
+            link
+                for link in Link
+                if link.start.id == edium_id or link.end.id == edium_id
+        )
+        content = [link.to_model() for link in links]
+    return content
+
+
+def create_one_link(data: models.CreateLinkModel) -> models.LinkModel:
+    """Create and return one link."""
+    with orm.db_session:
+        # Check that the edia exist
+        edium1: Optional[Edium] = Edium.get(id=data.start)
+        if edium1 is None:
+            raise exceptions.ObjectNotFound("edium", data.start)
+        edium2: Optional[Edium] = Edium.get(id=data.end)
+        if edium2 is None:
+            raise exceptions.ObjectNotFound("edium", data.end)
+        # Create the link
+        link = Link(
+            start=edium1,
+            end=edium2,
+            directed=data.directed,
+            label=data.label,
+        )
+        orm.commit()
+        return link.to_model()
+
+
+def modify_one_link(link_id: int, data: models.ModifyLinkModel) -> models.LinkModel:
+    """Modify a link and return its model."""
+    with orm.db_session:
+        link = Link.get(id=link_id)
+        if link is None:
+            raise exceptions.ObjectNotFound("link", link_id)
+        for (key, val) in data.dict(exclude_unset=True).items():
+            setattr(link, key, val)
+        orm.commit()
+        content = link.to_model()
+    return content
+
+
+def delete_one_link(link_id: int) -> models.LinkModel:
+    """Delete a link and return its model."""
+    with orm.db_session:
+        link = Link.get(id=link_id)
+        if link is None:
+            raise exceptions.ObjectNotFound("link", link_id)
+        content = link.to_model()
+        link.delete()
     return content

@@ -139,12 +139,12 @@ Then, an interactive docs page is available at http://localhost:59130.
 
 | Status | Method | URL              | Function                               |
 |:------:|:------:|------------------|----------------------------------------|
-|        |  GET   | `/link`          | Get the list of all links              |
-|        |  GET   | `/link/5`        | Get one link                           |
-|        |  GET   | `/edium/5/links` | Get all links that have an edium in it |
-|        |  POST  | `/link`          | Create one link                        |
-|        | PATCH  | `/link/5`        | Modify one link                        |
-|        | DELETE | `/link/5`        | Delete one link                        |
+|   X    |  GET   | `/link`          | Get the list of all links              |
+|   X    |  GET   | `/link/5`        | Get one link                           |
+|   X    |  GET   | `/edium/5/links` | Get all links that have an edium in it |
+|   X    |  POST  | `/link`          | Create one link                        |
+|   X    | PATCH  | `/link/5`        | Modify one link                        |
+|   X    | DELETE | `/link/5`        | Delete one link                        |
 
 ## The next step
 

@@ -194,6 +194,16 @@ class Link(database.Entity):
     directed = orm.Required(bool)
     label = orm.Optional(str)
 
+    def to_model(self) -> models.LinkModel:
+        """Return a LinkModel made with the link data."""
+        return models.LinkModel(
+            id=self.id,
+            start=self.start.id,
+            end=self.end.id,
+            directed=self.directed,
+            label=self.label,
+        )
+
 
 def use_database(file_path: Path, debug: bool = False) -> None:
     logger.info("Use the database at %s", file_path)

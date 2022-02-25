@@ -31,6 +31,14 @@ class EdiumModel(BaseModel):
     creation_date: datetime
 
 
+class LinkModel(BaseModel):
+    id: int
+    start: int = Field(ge=1)
+    end: int = Field(ge=1)
+    directed: bool
+    label: str
+
+
 class CreateEdiumModel(BaseModel):
     title: str = Field(min_length=1)
     kind: str = Field("")
@@ -119,3 +127,14 @@ class CreateElementModel(BaseModel):
 
 class ModifyElementModel(BaseModel):
     name: str = Field(default_factory=lambda: None, min_length=1)
+
+
+class CreateLinkModel(BaseModel):
+    start: int = Field(ge=1)
+    end: int = Field(ge=1)
+    directed: bool
+    label: str
+
+
+class ModifyLinkModel(BaseModel):
+    label: Optional[str]
