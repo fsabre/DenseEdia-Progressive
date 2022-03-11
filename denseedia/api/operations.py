@@ -1,4 +1,5 @@
-from typing import Dict, List, Optional
+from collections import Counter
+from typing import Dict, List, Optional, Tuple
 
 from .. import exceptions, models
 from ..storage.tables import Edium, Element, Link, orm, Version
@@ -240,3 +241,14 @@ def delete_one_link(link_id: int) -> models.LinkModel:
         content = link.to_model()
         link.delete()
     return content
+
+
+def most_used_elements(kind: str, max_count: int) -> List[Tuple[str, int]]:
+    """Return the most used element names for an edium kind.
+    The return format is a tuple (element_name, count).
+    """
+    # I tried to make it purely SQL, but I can't do it with Pony.
+    with orm.db_session:
+        query = orm.select(e.elements.name for e in Edium if e.kind == kind).without_distinct()
+        counter: Counter = Counter(query)
+    return counter.most_common(max_count)
