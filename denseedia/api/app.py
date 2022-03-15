@@ -1,6 +1,6 @@
 """Define the FastAPI app."""
 
-from typing import List
+from typing import List, Tuple
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -282,3 +282,18 @@ def delete_one_link(link_id: int) -> models.LinkModel:
         return operations.delete_one_link(link_id)
     except exceptions.ObjectNotFound as err:
         raise HTTPException(status_code=404, detail=err.args[0])
+
+
+@app.get(
+    path="/stats/most_used_elements/{kind}",
+    operation_id="most_used_elements",
+    summary="Get the most used elements names for a given edium kind",
+    response_model=List[Tuple[str, int]],
+    tags=["Stats"],
+)
+def most_used_elements(
+    kind: str,
+    max_count: int = Query(default=10, ge=1),
+) -> List[Tuple[str, int]]:
+    """Get the most used elements names for a given edium kind."""
+    return operations.most_used_elements(kind, max_count)
