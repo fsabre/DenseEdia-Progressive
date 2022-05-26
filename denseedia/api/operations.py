@@ -62,22 +62,33 @@ def get_elements_of_one_edium(edium_id: int, mode: models.VersionsMode.asType) -
     with orm.db_session:
         # The first request is used to retrieve the elements
         elements = orm.select(e for e in Element if e.edium.id == edium_id)
-        if not elements:
-            return []
+
+        # Don't have to provide the versions, it's easy
+        if mode == models.VersionsMode.NONE:
+            return [element.to_model() for element in elements]
+
         content: Dict[int, models.ElementModel]
         content = {element.id: element.to_model() for element in elements}
 
-        # Attach the last version of each element if needed by the mode
+        # Let's make a second request to retrieve the needed versions
         if mode == models.VersionsMode.SINGLE:
-            # A second request is used to retrieve the last version of those elements
             versions = orm.left_join(
                 v
                     for e in Element
                     for v in e.versions
                     if e.edium.id == edium_id if v.last is True
             )
-            for version in versions:
-                content[version.element.id].versions = [version.to_model()]
+        else:
+            versions = orm.left_join(
+                v
+                    for e in Element
+                    for v in e.versions
+                    if e.edium.id == edium_id
+            )
+
+        # Insert those versions in the returned pydantic models
+        for version in versions:
+            content[version.element.id].versions.append(version.to_model())
 
     return list(content.values())
 

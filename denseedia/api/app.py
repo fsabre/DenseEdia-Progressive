@@ -100,8 +100,6 @@ def get_elements_of_one_edium(
     versions: models.VersionsMode.asType = Query(models.VersionsMode.NONE),
 ) -> List[models.ElementModel]:
     """Get the elements of one edium and their versions."""
-    if versions == models.VersionsMode.ALL:
-        raise HTTPException(status_code=501, detail="Retrieval of all versions is not implemented yet")
     return operations.get_elements_of_one_edium(edium_id, mode=versions)
 
 

@@ -124,7 +124,7 @@ Then, an interactive docs page is available at http://localhost:59130.
 |:------:|:------:|------------------------------------|------------------------------------------------------|
 |   X    |  GET   | `/edium/5/element?versions=none`   | Get the elements of one edium                        |
 |   X    |  GET   | `/edium/5/element?versions=single` | Get the elements of one edium and their last version |
-|        |  GET   | `/edium/5/element?versions=all`    | Get the elements of one edium and all their versions |
+|   X    |  GET   | `/edium/5/element?versions=all`    | Get the elements of one edium and all their versions |
 |   X    |  GET   | `/element/5?versions=none`         | Get one element                                      |
 |   X    |  GET   | `/element/5?versions=single`       | Get one element and its last version                 |
 |   X    |  GET   | `/element/5?versions=all`          | Get one element and all its versions                 |
