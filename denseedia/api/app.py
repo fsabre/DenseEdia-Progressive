@@ -183,6 +183,21 @@ def create_one_version(element_id: int, body: models.CreateVersionModel) -> mode
         raise HTTPException(status_code=404, detail=err.args[0])
 
 
+@app.patch(
+    path="/version/{version_id}",
+    operation_id="modify_one_version",
+    summary="Modify one version",
+    response_model=models.VersionModel,
+    tags=["Elements"],
+)
+def modify_one_version(version_id: int, body: models.CreateVersionModel) -> models.VersionModel:
+    """Modify one version."""
+    try:
+        return operations.modify_one_version(version_id, body)
+    except exceptions.ObjectNotFound as err:
+        raise HTTPException(status_code=404, detail=err.args[0])
+
+
 @app.delete(
     path="/version/{version_id}",
     operation_id="delete_one_version",

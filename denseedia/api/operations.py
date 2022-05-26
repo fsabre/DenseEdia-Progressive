@@ -170,6 +170,26 @@ def create_one_version(element_id: int, data: models.CreateVersionModel) -> mode
     return content
 
 
+def modify_one_version(version_id: int, data: models.CreateVersionModel) -> models.VersionModel:
+    """Modify a version and return its model."""
+    with orm.db_session:
+        version: Optional[Version] = Version.get(id=version_id)
+        if version is None:
+            raise exceptions.ObjectNotFound("version", version_id)
+
+        v_type: models.ValueType.asType = data.value_type
+        v_json = data.value_json
+        # Same trick that in Element.create_version2
+        if v_type == models.ValueType.NONE:
+            v_json = ""
+        version.value_type = models.ValueType.to_id(v_type)
+        version.json = v_json
+
+        orm.commit()
+        content = version.to_model()
+    return content
+
+
 def delete_one_version(version_id: int) -> models.VersionModel:
     """Delete a version and return its model."""
     with orm.db_session:

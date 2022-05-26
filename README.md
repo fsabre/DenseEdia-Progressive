@@ -132,7 +132,7 @@ Then, an interactive docs page is available at http://localhost:59130.
 |   X    | PATCH  | `/element/5`                       | Modify one element                                   |
 |   X    | DELETE | `/element/5`                       | Delete one element                                   |
 |   X    |  POST  | `/element/5/version`               | Create a new version for an element                  |
-|        | PATCH  | `/element/5/version`               | Modify the last version of an element                |
+|   X    | PATCH  | `/element/5/version`               | Modify the last version of an element                |
 |   X    | DELETE | `/version/5`                       | Delete one version                                   |
 
 ##### Links :
