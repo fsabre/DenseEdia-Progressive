@@ -2,31 +2,35 @@
 
 One more DenseEdia, one step at a time.
 
-I'm tired of coding this project again and again just to drop it after a while.
-So this time, it will be done bit by bit, following what I need. I WON'T FEAR
-NEITHER THE REFACTORING NOR THE BREAKING CHANGES. And maybe I'll be in peace
-once again.
+(This repo is the last iteration of my project DenseEdia. No further implementation will be done unless it's finished.)
 
 ## What is DenseEdia ?
 
-Explaining one more time, are we ? It's meant to store things. Of any kinds.
-With any fields. And links between. Why not using database engine ? At this
-point, I don't remember, but I have a dream, as they say.
+DenseEdia aims to be a little database in which you can store what you want, as a graph.
+Its important features are its flexibility and versioning.
 
-## Installation
+All pieces of information (called Edia) will be stored at the same level. Then you can add typed Elements to them as you
+wish in order to get the property structure you like. Finally, you can draw Links between two Edia.
 
-On Unix :
+It's provided with 3 ways to interact, in order to use it or build your own custom frontend :
 
-```bash
-git clone https://github.com/fsabre/DenseEdia-Progressive  # Clone the project
-cd DenseEdia-Progressive/  # Move into the folder
-python3 -m venv venv  # Create a virtual environment
-source venv/bin/activate  # Enter it
-pip install -r requirements.txt  # Install the dependencies ... and it's done.
-```
+- Python library
+- Command line
+- REST HTTP API
 
-It's totally possible to use it on Windows/MacOS/etc, but the explanations will
-wait for now.
+I'm also developing [DenseEdia-Web](https://github.com/fsabre/DenseEdia-Web), a React web frontend that uses the
+provided HTTP API.
+
+## Why do I make this ?
+
+I wanted to have a tool that allowed me to store data about various things I liked, such as musics, games or books.
+
+I wanted them to be interconnected like in a web, so I could link an anime to its light novel counterpart, for instance.
+
+I wanted to be able to easily retrieve/modify the data from a script. Let's say, to make a list of my favourite musics
+of 2015.
+
+I wanted it not to depend on an external graph database engine and to be easy for the commoner to install and use.
 
 ## Concept
 
@@ -38,8 +42,20 @@ Edia. Each link can be directed or not, and have a label (optional).
 
 To store more information in a Edium, you can set elements. They are values with
 a precise type (NONE, BOOL, INT, FLOAT, STR, DATETIME) that are stored under a
-certain name in an Edium. This value is versioned, so you can retrieve an
+certain name in an Edium. This value is versioned, so you can retrieve a
 history of an element value over time.
+
+## Installation
+
+Clone the project, create a virtual environment and install the dependencies :
+
+```bash
+git clone https://github.com/fsabre/DenseEdia-Progressive  # Clone the project
+cd DenseEdia-Progressive/  # Move into the folder
+python3 -m venv venv  # Create a virtual environment
+source venv/bin/activate  # Enter it
+pip install -r requirements.txt  # Install the dependencies ... and it's done.
+```
 
 ## Usage
 
